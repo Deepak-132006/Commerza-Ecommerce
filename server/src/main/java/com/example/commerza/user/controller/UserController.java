@@ -1,8 +1,8 @@
 package com.example.commerza.user.controller;
-import com.example.commerza.user.dto.LoginRequest;
-import com.example.commerza.user.dto.LoginResponse;
-import com.example.commerza.user.dto.RegisterRequest;
-import com.example.commerza.user.dto.RegisterResponse;
+import com.example.commerza.user.dto.*;
+import com.example.commerza.user.refreshtoken.dto.RefreshRequest;
+import com.example.commerza.user.refreshtoken.dto.RefreshResponse;
+import com.example.commerza.user.refreshtoken.service.RefreshTokenService;
 import com.example.commerza.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final RefreshTokenService refreshTokenService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, RefreshTokenService refreshTokenService) {
         this.userService = userService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @PostMapping("/api/v1/auth/register")
@@ -32,6 +34,27 @@ public class UserController {
         LoginResponse response = userService.getLogin(request);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/api/v1/auth/refresh-token")
+    public RefreshResponse refreshTokens(@RequestBody RefreshRequest request){
+        return refreshTokenService.refresh(request);
+    }
+
+    @PostMapping("/api/v1/auth/logout")
+    public LogoutResponse logout(@RequestBody LogoutRequest request){
+        return userService.logout(request);
+    }
+
+    @PostMapping("/api/v1/orders")
+    public String test(){
+        return "Authenticated";
+    }
+
+
+    @PostMapping("/api/v1/admin")
+    public String test2(){
+        return "Authenticated";
     }
 
 }
