@@ -19,7 +19,7 @@ public class JwtUtil {
     public String generateToken(String email) {
         Date now = new Date();
         Date expiry = new Date(
-                now.getTime() + 60 * 1000
+                now.getTime() + 1000 * 60 * 60
         );
         return Jwts.builder().subject(email).issuedAt(now).expiration(expiry).signWith(key).compact();
     }
