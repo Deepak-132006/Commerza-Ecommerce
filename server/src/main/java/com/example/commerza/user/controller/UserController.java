@@ -34,4 +34,13 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/api/v1/orders")
+    public String test(){
+        return "Authenticated";
+    }
+    @PostMapping("/api/v1/admin")
+    public String test2(){
+        return "Authenticated";
+    }
+
 }

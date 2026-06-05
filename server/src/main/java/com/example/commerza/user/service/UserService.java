@@ -7,6 +7,7 @@ import com.example.commerza.user.dto.RegisterResponse;
 import com.example.commerza.user.entity.Role;
 import com.example.commerza.user.entity.User;
 import com.example.commerza.user.repository.UserRespository;
+import com.example.commerza.user.security.JwtUtil;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,13 +18,21 @@ public class UserService {
 
     private final UserRespository userRespository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private UserService(UserRespository userRespository, BCryptPasswordEncoder passwordEncoder) {
+    private final JwtUtil jwtUtil;
+    private UserService(UserRespository userRespository, BCryptPasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRespository = userRespository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
 
     public RegisterResponse getRegister(RegisterRequest request) {
+        if(request.getName().isBlank() || request.getEmail().isBlank() || request.getPassword().isBlank()){
+            return RegisterResponse.builder().message("Every fields are required !!").build();
+        }
+        if(userRespository.existsByEmail(request.getEmail())){
+            return RegisterResponse.builder().message("User already exists").build();
+        }
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
@@ -32,15 +41,14 @@ public class UserService {
                 .isActive(true)
                 .createdAt(LocalDateTime.now())
                 .build();
-
-        User saveduser = userRespository.save(user);
+        User savedUser = userRespository.save(user);
 
         return RegisterResponse.builder()
-                .id(saveduser.getId())
-                .name(saveduser.getName())
-                .email(saveduser.getEmail())
-                .role(saveduser.getRole())
-                .createdAt(saveduser.getCreatedAt())
+                .id(savedUser.getId())
+                .name(savedUser.getName())
+                .email(savedUser.getEmail())
+                .role(savedUser.getRole())
+                .createdAt(savedUser.getCreatedAt())
                 .message("User registered successfully").build();
     }
 
@@ -59,6 +67,7 @@ public class UserService {
             response.setEmail(user.getEmail());
             response.setRole(String.valueOf(user.getRole()));
             response.setName(user.getName());
+            response.setToken(jwtUtil.generateToken(user.getEmail()));
         } else {
             response.setMessage("Invalid Credentials");
         }

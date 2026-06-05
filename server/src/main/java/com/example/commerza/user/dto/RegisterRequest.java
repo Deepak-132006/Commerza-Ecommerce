@@ -4,6 +4,7 @@ import com.example.commerza.user.entity.Role;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -23,5 +24,6 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank
+    @Size(min = 8, max = 12, message = "Password must be 8 to 12 characters")
     private String password;
 }
