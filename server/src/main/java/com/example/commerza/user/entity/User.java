@@ -26,7 +26,7 @@ public class User {
 
     @NotBlank
     @Email
-    @Column(unique = true)
+    @Column(unique = true, name = "email")
     private String email;
 
     @NotBlank

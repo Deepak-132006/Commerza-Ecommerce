@@ -38,7 +38,7 @@ const Navbar = () => {
           </div>
           <div className="w-full flex gap-5 justify-between items-center">
             <div
-              className="w-full bg-soft-fawn rounded-sm text-porcelain duration-150 hover:text-olive-bark flex items-center justify-center cursor-pointer"
+              className="w-full bg-soft-fawn rounded-sm text-porcelain duration-150 hover:text-olive-bark flex items-center justify-center cursor-pointer hover:scale-105"
               onClick={() => {
                 navigate("/login");
               }}
@@ -49,7 +49,7 @@ const Navbar = () => {
             </div>
 
             <div
-              className="w-full cursor-pointer border-olive-bark border-2 rounded-sm py-[5px] bg-cwhite flex items-center justify-center hover:bg-evergreen duration-150 hover:border-white hover:text-cwhite text-pacific-cyan"
+              className="w-full cursor-pointer border-olive-bark border-2 rounded-sm py-[5px] bg-cwhite flex items-center justify-center hover:bg-evergreen duration-150 hover:border-white hover:text-cwhite text-pacific-cyan hover:scale-105"
               onClick={() => navigate("/register")}
             >
               <button className="cursor-pointer font-sans text-[16px] ">
@@ -97,7 +97,7 @@ const Navbar = () => {
         <div className="flex justify-center items-center mt-75 mb-15">
           <div className="w-full px-8 flex gap-5 justify-between items-center">
             <div
-              className="w-full bg-soft-fawn rounded-sm text-porcelain duration-150 hover:text-olive-bark flex items-center justify-center cursor-pointer"
+              className="w-full bg-soft-fawn rounded-sm text-porcelain duration-150 hover:text-olive-bark flex items-center justify-center cursor-pointer hover:scale-105"
               onClick={() => {
                 navigate("/login");
               }}
@@ -106,7 +106,7 @@ const Navbar = () => {
             </div>
 
             <div
-              className="w-full cursor-pointer border-olive-bark border-2 rounded-sm py-3 bg-cwhite flex items-center justify-center hover:bg-evergreen duration-150 hover:border-white hover:text-cwhite text-pacific-cyan"
+              className="w-full cursor-pointer border-olive-bark border-2 rounded-sm py-3 bg-cwhite flex items-center justify-center hover:bg-evergreen duration-150 hover:border-white hover:text-cwhite text-pacific-cyan hover:scale-105"
               onClick={() => navigate("/register")}
             >
               <button className="font-sans text-[16px]">Register</button>

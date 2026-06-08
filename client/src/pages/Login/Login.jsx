@@ -1,10 +1,50 @@
 import React from "react";
 import Navbar from "../../layouts/Navbar";
 import { useNavigate } from "react-router-dom";
-import Logo_Round from "../../assets/logo/Logo-NoBG.png"
+import Logo_Round from "../../assets/logo/Logo-NoBG.png";
+import { useState } from "react";
+import Show from "../../assets/icons/show.png";
+import Hide from "../../assets/icons/hide.png";
+import api from "../../axios/api";
 
 const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [validEmail, setValidEmail] = useState(false);
+  const [validPassword, setValidPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
+  const validatePassword = (password) => {
+    const regex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=\[\]{};':"\\|,.<>\/~`])[A-Za-z\d@$!%*?&^#()_+\-=\[\]{};':"\\|,.<>\/~`]{8,}$/;
+
+    setValidPassword(regex.test(password));
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setValidEmail(emailRegex.test(email));
+  };
+
   const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    try {
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+      });
+      navigate("/products");
+      console.log(res.data.message);
+    } catch (error) {
+      console.log(error.response?.data?.message || "Something went wrong");
+    }
+  };
+
   return (
     <div className="bg-porcelain h-screen">
       <div>
@@ -23,25 +63,76 @@ const Login = () => {
               <p>Explore the collection, express yourself</p>
             </div>
           </div>
-          <div className="mt-5 flex flex-col gap-5 p-8 border-2 border-gray-200 rounded-3xl w-[400px] justify-center m-auto">
+          <div className="mt-5 flex flex-col gap-5 p-8 border-2 border-gray-200 rounded-3xl w-[350px] justify-center m-auto">
             <div>
+              <div>
+                {email.length > 0 && !validEmail && (
+                  <p className="text-[12px] text-red-600 font-exo m-2 ">
+                    Invalid email id
+                  </p>
+                )}
+              </div>
               <input
                 required
                 type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  validateEmail(e.target.value);
+                }}
                 placeholder="Enter your email"
-                className="p-3 bg-white border-[2px] rounded-2xl border-gray-200 focus:outline-hunter-green focus:outline-2 w-full"
+                className="p-3 bg-white border-[2px] rounded-2xl border-gray-200 focus:outline-blue-700 focus:outline-2 w-full"
               />
             </div>
             <div>
-              <input
-                required
-                type="password"
-                placeholder="Choose your password"
-                className="p-3 bg-white border-[2px] rounded-2xl border-gray-200 focus:outline-hunter-green focus:outline-2 w-full"
-              />
+              <div>
+                {password.length > 0 && !validPassword && (
+                  <p className="text-[12px] text-red-600 font-exo m-2 ">
+                    Include letters, numbers & special symbols {"(8 - 12)"}
+                  </p>
+                )}
+              </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    validatePassword(e.target.value);
+                  }}
+                  placeholder="Choose your password"
+                  className="p-3 pr-10 bg-white border-2 rounded-2xl border-gray-200 w-full focus:outline-blue-700 focus:outline-2"
+                />
+
+                <button
+                  type="button"
+                  onClick={togglePassword}
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                >
+                  {showPassword ? (
+                    <img className="w-5" src={Show} alt="" />
+                  ) : (
+                    <img className="w-5" src={Hide} alt="" />
+                  )}
+                </button>
+              </div>
+            </div>
+            <div className="m-auto">
+              <p className="text-[14px]">
+                Forget Password?{" "}
+                <span
+                  className="underline text-hunter-green cursor-pointer"
+                  onClick={() => navigate("/forget")}
+                >
+                  click here
+                </span>
+              </p>
             </div>
             <div>
-              <button className="w-full bg-hunter-green p-3 text-[16px] text-porcelain rounded-md hover:bg-evergreen hover:cursor-pointer">
+              <button
+                className="w-full bg-hunter-green p-3 text-[16px] text-porcelain rounded-md hover:bg-evergreen hover:cursor-pointer"
+                onClick={handleLogin}
+              >
                 Login
               </button>
             </div>
