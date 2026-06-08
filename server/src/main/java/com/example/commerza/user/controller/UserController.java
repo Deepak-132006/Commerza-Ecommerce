@@ -1,5 +1,6 @@
 package com.example.commerza.user.controller;
 import com.example.commerza.user.dto.*;
+import com.example.commerza.user.passwordreset.dto.*;
 import com.example.commerza.user.refreshtoken.dto.RefreshRequest;
 import com.example.commerza.user.refreshtoken.dto.RefreshResponse;
 import com.example.commerza.user.refreshtoken.service.RefreshTokenService;
@@ -24,16 +25,14 @@ public class UserController {
 
     @PostMapping("/api/v1/auth/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody @Valid RegisterRequest request){
-        RegisterResponse response = userService.getRegister(request);
+        RegisterResponse response = userService.getRegister(request).getBody();
 
-        return ResponseEntity.ok(response);
+        return userService.getRegister(request);
     }
 
     @PostMapping("/api/v1/auth/login")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request){
-        LoginResponse response = userService.getLogin(request);
-
-        return ResponseEntity.ok(response);
+        return userService.getLogin(request);
     }
 
     @PostMapping("/api/v1/auth/refresh-token")
@@ -42,8 +41,24 @@ public class UserController {
     }
 
     @PostMapping("/api/v1/auth/logout")
-    public LogoutResponse logout(@RequestBody LogoutRequest request){
+    public ResponseEntity<LogoutResponse> logout(@RequestBody LogoutRequest request){
         return userService.logout(request);
+    }
+
+    @PostMapping("/api/v1/auth/forget-password")
+    public ResponseEntity<ResetResponse> reset(@RequestBody ResetRequest request){
+        System.out.println("API RECEIVED - CONTROLLER");
+        return userService.reset(request);
+    }
+
+    @PostMapping("/api/v1/auth/verify-otp")
+    public ResponseEntity<VerifyResponse> verifyResponse(@RequestBody VerifyRequest request){
+        return userService.verifyResponse(request);
+    }
+
+    @PostMapping("/api/v1/auth/reset-password")
+    public ResponseEntity<PasswordResponse> resetPassword(@RequestBody PasswordRequest request){
+        return userService.resetPassword(request);
     }
 
     @PostMapping("/api/v1/orders")

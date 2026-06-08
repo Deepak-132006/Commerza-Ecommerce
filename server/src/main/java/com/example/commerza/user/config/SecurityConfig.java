@@ -3,6 +3,8 @@ package com.example.commerza.user.config;
 import com.example.commerza.user.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,38 +25,49 @@ public class SecurityConfig {
 
 
     @Bean
-    public BCryptPasswordEncoder passwordEncoder(){
+    public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
-        http.
-                csrf(csrf -> csrf.disable()
-                        .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/auth/**").permitAll()
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-                                .requestMatchers(
-                                        "/api/v1/admin/**"
-                                ).hasRole("ADMIN")
+        http
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
 
-                                .requestMatchers(
-                                        "/api/v1/cart/**",
-                                        "/api/v1/orders/**",
-                                        "/api/v1/wishlist/**",
-                                        "/api/v1/addresses/**",
-                                        "/api/v1/users/**"
-                                ).hasRole("USER")
+                .authorizeHttpRequests(auth -> auth
 
-                                .requestMatchers(
-                                        "/api/v1/products/**",
-                                        "/api/v1/categories/**"
-                                ).permitAll()
-                                .anyRequest().authenticated())
-        );
+                        .requestMatchers(HttpMethod.OPTIONS, "/**")
+                        .permitAll()
 
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                        .requestMatchers("/api/v1/auth/**")
+                        .permitAll()
 
-        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                        .requestMatchers("/api/v1/admin/**")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(
+                                "/api/v1/cart/**",
+                                "/api/v1/orders/**",
+                                "/api/v1/wishlist/**",
+                                "/api/v1/addresses/**",
+                                "/api/v1/users/**"
+                        ).hasRole("USER")
+
+                        .requestMatchers(
+                                "/api/v1/products/**",
+                                "/api/v1/categories/**"
+                        ).permitAll()
+
+                        .anyRequest().authenticated()
+                )
+
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        http.addFilterBefore(jwtFilter,
+                UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
