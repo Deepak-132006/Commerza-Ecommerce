@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 
-export default function OtpInput() {
+export default function OtpInput({onOtpChange}) {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputs = useRef([]);
 
@@ -10,6 +10,8 @@ export default function OtpInput() {
     const newOtp = [...otp];
     newOtp[index] = value.slice(-1);
     setOtp(newOtp);
+
+    onOtpChange?.(newOtp.join(""))
 
     if (value && index < 5) {
       inputs.current[index + 1].focus();
@@ -39,6 +41,8 @@ export default function OtpInput() {
     });
 
     setOtp(newOtp);
+
+    onOtpChange?.(newOtp.join(""))
 
     const lastIndex = Math.min(pastedData.length - 1, 5);
     inputs.current[lastIndex]?.focus();

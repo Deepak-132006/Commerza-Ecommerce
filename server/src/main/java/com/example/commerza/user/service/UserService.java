@@ -116,7 +116,6 @@ public class UserService {
     }
 
     public ResponseEntity<ResetResponse> reset(ResetRequest request) {
-        System.out.println("API RECEIVED - SERVICE");
         User user = userRespository.findByEmail(request.getEmail());
 
         if (user != null) {
