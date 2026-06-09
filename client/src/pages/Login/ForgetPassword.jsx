@@ -1,4 +1,4 @@
-import React from "react";
+import React, { startTransition } from "react";
 import Navbar from "../../layouts/Navbar";
 import OtpInput from "../../utils/OtpInput";
 import Logo_Round from "../../assets/logo/Logo-NoBG.png";
@@ -7,21 +7,38 @@ import api from "../../axios/api.js";
 import Check from "../../assets/icons/check-mark.png";
 import Sending from "../../assets/icons/loading.png";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const ForgetPassword = () => {
   const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
   const [validEmail, setValidEmail] = useState(false);
+  const [status, setStatus] = useState("verify");
   const [otpLoader, setOtpLoader] = useState(false);
   const [sent, setSent] = useState(false);
+  const navigate = useNavigate();
+
+  const handleVerify = async () => {
+    try {
+      setStatus("processing");
+      const res = await api.post("/auth/verify-otp", {
+        email,
+        otp,
+      });
+
+      navigate("/reset");
+    } catch (error) {
+      setStatus("invalid");
+      console.error(error.response?.data?.message || "Invalid OTP");
+    }
+  };
 
   const validateEmail = (email) => {
-    email.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    setValidEmail(emailRegex.test(email));
+    setValidEmail(emailRegex.test(email.trim()));
   };
 
   const handleOtp = async () => {
-    console.log("Button Clicked");
     try {
       setOtpLoader(true);
       setSent(false);
@@ -97,6 +114,7 @@ const ForgetPassword = () => {
                   className="p-3 bg-white border-[2px] rounded-2xl border-gray-200 focus:outline-blue-700 focus:outline-2 w-full"
                 />
                 <button
+                  disabled={otpLoader}
                   className="p-3 border-2 w-30 rounded-2xl text-porcelain bg-soft-fawn hover:bg-evergreen"
                   onClick={handleOtp}
                 >
@@ -114,20 +132,32 @@ const ForgetPassword = () => {
                   )}
                 </div>
                 <div className="flex flex-col gap-5">
-                  <OtpInput />
+                  <OtpInput
+                    onOtpChange={(value) => {
+                      console.log("Received: ",value )
+                      setOtp(value);
+                      setStatus("verify");
+                    }}
+                  />
                   <div className="m-auto">
                     <p className="text-[14px]">
                       Didn't receive the otp?{" "}
                       <span
                         className="underline text-hunter-green cursor-pointer"
-                        onClick={() => navigate("/forget")}
+                        onClick={handleOtp}
                       >
                         resend here
                       </span>
                     </p>
                   </div>
-                  <button className="p-3 border-2 w-full rounded-lg text-porcelain bg-hunter-green hover:bg-evergreen">
-                    Verify
+                  <button
+                    disabled={status === "processing"}
+                    className="p-3 border-2 w-full rounded-lg text-porcelain bg-hunter-green hover:bg-evergreen"
+                    onClick={handleVerify}
+                  >
+                    {status === "verify" && "Verify"}
+                    {status === "processing" && "Processing..."}
+                    {status === "invalid" && "Invalid OTP"}
                   </button>
                 </div>
               </div>

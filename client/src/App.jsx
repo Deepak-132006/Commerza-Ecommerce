@@ -9,6 +9,7 @@ import Checkout from "../src/pages/Checkout/Checkout.jsx"
 import Home from "../src/pages/Home/Home.jsx"
 import Favourites from './pages/Favourites/Favourites.jsx'
 import ForgetPassword from './pages/Login/ForgetPassword.jsx'
+import NewPassword from './pages/Login/NewPassword.jsx'
 
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
         <Route path='/' element={<Home/>}/>
         <Route path='/login' element={<Login/>}/>
         <Route path='/forget' element={<ForgetPassword/>}/>
+        <Route path='/reset' element={<NewPassword/>}/>
         <Route path='/register' element={<Register/>}/>
         <Route path='/profile' element={<Profile/>}/>
         <Route path='/products' element={<Product/>}/>

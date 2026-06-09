@@ -47,7 +47,7 @@ public class UserController {
 
     @PostMapping("/api/v1/auth/forget-password")
     public ResponseEntity<ResetResponse> reset(@RequestBody ResetRequest request){
-        System.out.println("API RECEIVED - CONTROLLER");
+
         return userService.reset(request);
     }
 
