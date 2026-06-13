@@ -38,8 +38,14 @@ const Login = () => {
         email,
         password,
       });
+      console.log(res.data);
+      localStorage.setItem("accessToken", res.data.accessToken)
+      localStorage.setItem("refreshToken", res.data.refreshToken)
+      localStorage.setItem("name", res.data.name)
+      localStorage.setItem("email", res.data.email)
+      localStorage.setItem("role", res.data.role)
+
       navigate("/products");
-      console.log(res.data.message);
     } catch (error) {
       console.log(error.response?.data?.message || "Something went wrong");
     }

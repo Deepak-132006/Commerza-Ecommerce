@@ -30,17 +30,14 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
-        String token = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-        }
-        if (token == null) {
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
-
+        String token = authHeader.substring(7);
         String email = jwtUtil.extractEmail(token);
 
         if (email == null) {
@@ -57,19 +54,21 @@ public class JwtFilter extends OncePerRequestFilter {
 
         boolean valid = jwtUtil.isTokenValid(token, user.getEmail());
 
-        if (valid) {
-
-            Role role = user.getRole();
-            String userRole = "ROLE_" + role.name();
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    user,
-                    null,
-                    List.of(new SimpleGrantedAuthority(userRole))
-            );
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            System.out.println("User authenticated" + email);
+        if (!valid) {
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
         }
 
+
+        Role role = user.getRole();
+        String userRole = "ROLE_" + role.name();
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                user,
+                null,
+                List.of(new SimpleGrantedAuthority(userRole))
+        );
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         filterChain.doFilter(request, response);
     }
 }
