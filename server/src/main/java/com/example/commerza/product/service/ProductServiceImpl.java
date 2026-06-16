@@ -4,6 +4,7 @@ import com.example.commerza.category.entity.Category;
 import com.example.commerza.category.repository.CategoryRepository;
 import com.example.commerza.product.dto.CreateProductRequest;
 import com.example.commerza.product.dto.ProductResponse;
+import com.example.commerza.product.dto.UpdateProductRequest;
 import com.example.commerza.product.entity.Product;
 import com.example.commerza.product.mapper.ProductMapper;
 import com.example.commerza.product.repository.ProductRepository;
@@ -80,37 +81,51 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse updateProduct(Long id) {
-        Optional<Product> product = productRepository.findById(id);
-
-        if (product.isEmpty()) {
+    public ProductResponse updateProduct(Long id, UpdateProductRequest request) {
+        Optional<Product> entity = productRepository.findById(id);
+        if (entity.isEmpty()) {
             throw new NoSuchElementException("Product not found");
         }
 
-        Product entity = product.get();
+        Product product = entity.get();
 
-        if (entity.getName() == null || entity.getName().isBlank()) {
-            throw new IllegalArgumentException("Product name is required");
+        if (!product.getName().equals(request.getName())) {
+            if (productRepository.existsByName(request.getName())) {
+                throw new IllegalArgumentException("Product already exists");
+            }
         }
 
-        if (entity.getPrice() != null && entity.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+        if (request.getDescription() == null || request.getDescription().isBlank()) {
+            throw new IllegalArgumentException("Description is Required");
+        }
+
+        if (request.getPrice() != null && request.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Price must be greater than 0");
         }
 
-        if (entity.getStock() < 0) {
+        if (request.getStock() < 0) {
             throw new IllegalArgumentException("Stock should not be negative");
         }
 
-        if (entity.getCategory() == null) {
+        if (request.getCategoryId() == null) {
             throw new NoSuchElementException("Category is required");
         }
 
-        if(entity.getImageUrl() == null){
+        Optional<Category> categoryEntity = categoryRepository.findById(request.getCategoryId());
 
+        if (categoryEntity.isEmpty()) {
+            throw new NoSuchElementException("Category not found");
         }
 
-        if (productRepository.existsByName(entity.getName())) {
-            throw new IllegalArgumentException("Product already exists");
+        if (request.getImageUrl() == null) {
+            throw new NoSuchElementException("Image URL is required");
         }
+
+
+        productMapper.updateProductFromRequest(request, product);
+        product.setCategory(categoryEntity.get());
+        Product saved = productRepository.save(product);
+
+        return productMapper.toResponse(saved);
     }
 }
