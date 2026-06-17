@@ -16,8 +16,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class UpdateProductRequest {
 
-    @NotNull
-    private Long id;
 
     @NotBlank(message = "Product name should not be empty")
     @Column(nullable = false, unique = true)

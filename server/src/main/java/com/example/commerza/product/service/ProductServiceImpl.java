@@ -9,8 +9,6 @@ import com.example.commerza.product.entity.Product;
 import com.example.commerza.product.mapper.ProductMapper;
 import com.example.commerza.product.repository.ProductRepository;
 import org.springframework.stereotype.Service;
-
-import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -49,15 +47,23 @@ public class ProductServiceImpl implements ProductService {
             throw new IllegalArgumentException("Product already exists");
         }
 
+        if (request.getStock() == null) {
+            throw new IllegalArgumentException("Stock is required");
+        }
+
         if (request.getStock() < 0) {
             throw new IllegalArgumentException("Stock should not be negative");
         }
 
-        if (request.getPrice() != null && request.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+        if(request.getPrice() == null) {
+            throw new IllegalArgumentException("Price is required");
+        }
+        if (request.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Price must be greater than 0");
         }
 
         entity = productMapper.toEntity(request);
+        entity.setCategory(category.get());
 
         Product saved = productRepository.save(entity);
         return productMapper.toResponse(saved);
@@ -75,9 +81,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse getAllProduct() {
-        List<Product> product = productRepository.findAll();
-        return productMapper.toResponse((Product) List.of(product));
+    public List<ProductResponse> getAllProduct() {
+        List<Product> products = productRepository.findByActiveTrue();
+        return productMapper.toResponseList(products);
     }
 
     @Override
@@ -101,6 +107,10 @@ public class ProductServiceImpl implements ProductService {
 
         if (request.getPrice() != null && request.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Price must be greater than 0");
+        }
+
+        if (request.getStock() == null) {
+            throw new IllegalArgumentException("Stock is required");
         }
 
         if (request.getStock() < 0) {
@@ -128,4 +138,77 @@ public class ProductServiceImpl implements ProductService {
 
         return productMapper.toResponse(saved);
     }
+
+    @Override
+    public ProductResponse disableProduct(Long id) {
+        Optional<Product> entity = productRepository.findById(id);
+        if (entity.isEmpty()) {
+            throw new NoSuchElementException("Product not found");
+        }
+        Product product = entity.get();
+
+        product.setActive(false);
+        Product saved = productRepository.save(product);
+
+        return productMapper.toResponse(saved);
+    }
+
+    @Override
+    public ProductResponse enableProduct(Long id) {
+        Optional<Product> entity = productRepository.findById(id);
+        if (entity.isEmpty()) {
+            throw new NoSuchElementException("Product not found");
+        }
+        Product product = entity.get();
+
+        product.setActive(true);
+        Product saved = productRepository.save(product);
+
+        return productMapper.toResponse(saved);
+    }
+
+    @Override
+    public List<ProductResponse> getProductsByCategory(Long categoryId) {
+        Optional<Category> category = categoryRepository.findById(categoryId);
+        if (category.isEmpty()) {
+            throw new NoSuchElementException("Category not found");
+        }
+        List<Product> products = productRepository.findByCategoryIdAndActiveTrue(categoryId);
+
+        return productMapper.toResponseList(products);
+    }
+
+    @Override
+    public ProductResponse updateStock(Long productId, Integer stock) {
+        Optional<Product> entity = productRepository.findById(productId);
+        if (entity.isEmpty()) {
+            throw new NoSuchElementException("Product not found");
+        }
+
+        if (stock == null) {
+            throw new IllegalArgumentException("Stock is required");
+        }
+
+        if (stock < 0) {
+            throw new IllegalArgumentException("Stock cannot be negative");
+        }
+
+        Product product = entity.get();
+        product.setStock(stock);
+
+        Product saved = productRepository.save(product);
+
+        return productMapper.toResponse(saved);
+    }
+
+    @Override
+    public List<ProductResponse> searchProducts(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            throw new IllegalArgumentException("Keyword is required");
+        }
+
+        List<Product> entity = productRepository.findByNameContainingIgnoreCaseAndActiveTrue(keyword);
+        return productMapper.toResponseList(entity);
+    }
+
 }

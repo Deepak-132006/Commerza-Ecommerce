@@ -55,5 +55,5 @@ public class ProductResponse {
     @ManyToOne(fetch = FetchType.LAZY)
     @NotNull(message = "Category is required")
     @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    private Long categoryId;
 }
