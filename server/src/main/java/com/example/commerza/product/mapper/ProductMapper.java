@@ -9,6 +9,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
@@ -18,4 +20,6 @@ public interface ProductMapper {
     ProductResponse toResponse(Product product);
 
     void updateProductFromRequest(UpdateProductRequest request, @MappingTarget Product product);
+
+    List<ProductResponse> toResponseList(List<Product> products);
 }
