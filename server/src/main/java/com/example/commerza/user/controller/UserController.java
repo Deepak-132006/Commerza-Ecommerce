@@ -25,8 +25,6 @@ public class UserController {
 
     @PostMapping("/api/v1/auth/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody @Valid RegisterRequest request){
-        RegisterResponse response = userService.getRegister(request).getBody();
-
         return userService.getRegister(request);
     }
 

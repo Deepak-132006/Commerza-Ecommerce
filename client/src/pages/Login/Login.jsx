@@ -13,10 +13,12 @@ const Login = () => {
   const [validEmail, setValidEmail] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
+  
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
   };
+  
+
 
   const validatePassword = (password) => {
     const regex =
@@ -45,7 +47,7 @@ const Login = () => {
       localStorage.setItem("email", res.data.email)
       localStorage.setItem("role", res.data.role)
 
-      navigate("/products");
+      navigate("/");
     } catch (error) {
       console.log(error.response?.data?.message || "Something went wrong");
     }
