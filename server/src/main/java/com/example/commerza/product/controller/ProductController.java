@@ -1,16 +1,15 @@
 package com.example.commerza.product.controller;
 
-import com.example.commerza.product.dto.CreateProductRequest;
-import com.example.commerza.product.dto.ProductResponse;
-import com.example.commerza.product.dto.UpdateProductRequest;
-import com.example.commerza.product.service.ProductService;
+import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import com.example.commerza.product.dto.CreateProductRequest;
+import com.example.commerza.product.dto.ProductResponse;
+import com.example.commerza.product.dto.UpdateProductRequest;
+import com.example.commerza.product.service.ProductService;
 
 @RestController
 @RequestMapping("/api/v1")

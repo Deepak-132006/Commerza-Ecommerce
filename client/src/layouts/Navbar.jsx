@@ -11,7 +11,9 @@ const Navbar = () => {
   const navigate = useNavigate();
   return (
     <div className="relative">
-      <div className={` ${!open ? 'bg-porcelain' : 'bg-white'}  duration-250 flex justify-between items-center p-6 `}>
+      <div
+        className={` ${!open ? "bg-porcelain" : "bg-white"}  duration-250 flex justify-between items-center p-6 `}
+      >
         <div className="">
           <img src={Logo} className="w-35 -mt-2" alt="" />
         </div>
@@ -70,15 +72,17 @@ const Navbar = () => {
       >
         <div>
           <div className="hover:-translate-y-1.5 duration-150 mt-5">
-            <div className="py-6 px-8 flex justify-between items-center cursor-pointer hover:text-olive-bark">
-              <p className="font-sans text-[18px]">Products</p>
+            <button className="w-full justify-between py-6 px-8 flex items-center cursor-pointer hover:text-olive-bark"
+            onClick={()=>navigate("/products")}>
+              <p className="font-sans text-[18px] ">Products</p>
               <img src={Arrow} className="w-3" alt="" />
-            </div>
+            </button>
             <div className="w-[90%] md:w-[93%] h-[1px] ml-8 bg-gray-300"></div>
           </div>
 
           <div className="hover:-translate-y-1.5 duration-150">
-            <div className="py-6 px-8 flex justify-between items-center cursor-pointer hover:-translate-y-1.5 duration-150 hover:text-olive-bark">
+            <div className="py-6 px-8 flex justify-between items-center cursor-pointer hover:-translate-y-1.5 duration-150 hover:text-olive-bark"
+            onClick={()=>navigate("/cart")}>
               <p className="font-sans text-[18px]">Cart</p>
               <img src={Arrow} className="w-3" alt="" />
             </div>
@@ -86,7 +90,8 @@ const Navbar = () => {
           </div>
 
           <div className="hover:-translate-y-1.5 duration-150">
-            <div className="py-6 px-8 flex justify-between items-center cursor-pointer hover:-translate-y-1.5 duration-150 hover:text-olive-bark">
+            <div className="py-6 px-8 flex justify-between items-center cursor-pointer hover:-translate-y-1.5 duration-150 hover:text-olive-bark"
+            onClick={()=>navigate("/favorites")}>
               <p className="font-sans text-[18px]">Favorites</p>
               <img src={Arrow} className="w-3" alt="" />
             </div>
