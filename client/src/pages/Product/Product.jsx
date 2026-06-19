@@ -1,8 +1,13 @@
 import React from 'react'
+import Navbar from '../../layouts/Navbar'
 
 const Product = () => {
   return (
-    <div>Product</div>
+    <div>
+      <div>
+        <Navbar/>
+      </div>
+    </div>
   )
 }
 
