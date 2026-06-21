@@ -23,7 +23,7 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
         <Route
-          path="/products"
+          path="/products/category/:categoryId"
           element={
             <ProtectedRoutes>
               <Product />
