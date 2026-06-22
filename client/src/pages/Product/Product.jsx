@@ -34,6 +34,7 @@ const Product = () => {
     fetchProducts();
   }, [categoryId]);
 
+  
   return (
     <div className="min-h-screen">
       <Navbar />
