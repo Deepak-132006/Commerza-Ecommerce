@@ -22,6 +22,7 @@ const App = () => {
         <Route path="/reset" element={<NewPassword />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/products" element={<Product />} />
         <Route
           path="/products/category/:categoryId"
           element={
