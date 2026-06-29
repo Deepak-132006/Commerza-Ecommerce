@@ -18,9 +18,13 @@ const Product = () => {
         setLoading(true);
         setError("");
 
-        const res = await api.get(
-          `/products/category/${categoryId}`
-        );
+        let res;
+        if(categoryId) {
+          
+          res = `/products/category/${categoryId}`;
+        } else {
+          res = await api.get("/products")
+        }
 
         setProducts(res.data);
       } catch (err) {
@@ -34,7 +38,6 @@ const Product = () => {
     fetchProducts();
   }, [categoryId]);
 
-  
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -58,13 +61,11 @@ const Product = () => {
       {/* Header */}
       <div className="px-4 mb-4">
         <h1 className="text-2xl font-bold font-inter text-evergreen">
-          Products
+          {categoryId ? "Category Products" : "All Products"}
         </h1>
 
         {!loading && (
-          <p className="text-gray-600">
-            {products.length} products found
-          </p>
+          <p className="text-gray-600">{products.length} products found</p>
         )}
       </div>
 

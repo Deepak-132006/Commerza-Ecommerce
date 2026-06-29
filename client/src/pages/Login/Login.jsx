@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import Navbar from "../../layouts/Navbar";
 import { useNavigate } from "react-router-dom";
 import Logo_Round from "../../assets/logo/Logo-NoBG.png";
@@ -6,6 +6,7 @@ import { useState } from "react";
 import Show from "../../assets/icons/show.png";
 import Hide from "../../assets/icons/hide.png";
 import api from "../../axios/api";
+import { AuthContext } from "../../context/AuthProvider";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -13,11 +14,11 @@ const Login = () => {
   const [validEmail, setValidEmail] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
+  const { setIsLoggedIn } = useContext(AuthContext);
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
   };
-  
+
   const validatePassword = (password) => {
     const regex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=\[\]{};':"\\|,.<>\/~`])[A-Za-z\d@$!%*?&^#()_+\-=\[\]{};':"\\|,.<>\/~`]{8,}$/;
@@ -38,12 +39,13 @@ const Login = () => {
         email,
         password,
       });
-      console.log(res.data);
-      localStorage.setItem("accessToken", res.data.accessToken)
-      localStorage.setItem("refreshToken", res.data.refreshToken)
-      localStorage.setItem("name", res.data.name)
-      localStorage.setItem("email", res.data.email)
-      localStorage.setItem("role", res.data.role)
+      localStorage.setItem("accessToken", res.data.accessToken);
+      localStorage.setItem("refreshToken", res.data.refreshToken);
+      localStorage.setItem("name", res.data.name);
+      localStorage.setItem("email", res.data.email);
+      localStorage.setItem("role", res.data.role);
+
+      setIsLoggedIn(true);
 
       navigate("/");
     } catch (error) {
