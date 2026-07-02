@@ -21,12 +21,12 @@ const Product = () => {
         let res;
         if(categoryId) {
           
-          res = `/products/category/${categoryId}`;
+          res = await api.get(`/products/category/${categoryId}`);
         } else {
           res = await api.get("/products")
         }
 
-        setProducts(res.data);
+        setProducts(res.data || []);
       } catch (err) {
         console.error(err);
         setError("Failed to load products");
