@@ -58,16 +58,4 @@ public class UserController {
     public ResponseEntity<PasswordResponse> resetPassword(@RequestBody PasswordRequest request){
         return userService.resetPassword(request);
     }
-
-    @PostMapping("/api/v1/orders")
-    public String test(){
-        return "Authenticated";
-    }
-
-
-    @PostMapping("/api/v1/admin")
-    public String test2(){
-        return "Authenticated";
-    }
-
 }
