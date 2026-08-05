@@ -17,6 +17,8 @@ public class OrderResponse {
 
     private Long orderId;
 
+    private String productImage;
+
     private String orderNumber;
 
     private OrderStatus status;

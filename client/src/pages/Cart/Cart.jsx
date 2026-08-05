@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "../../layouts/Navbar";
 import api from "../../axios/api";
+import { useNavigate } from "react-router-dom";
 
 const FREE_SHIPPING_THRESHOLD = 999;
 
@@ -9,6 +10,7 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [removingIds, setRemovingIds] = useState([]);
   const [pendingQty, setPendingQty] = useState({});
+  const navigate = useNavigate()
 
   const fetchCart = async () => {
     try {

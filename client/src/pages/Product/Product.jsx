@@ -5,6 +5,7 @@ import Phone from "../../assets/products/mobiles/phone.jpg";
 import api from "../../axios/api";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const Product = () => {
   const { categoryId } = useParams();
@@ -14,6 +15,7 @@ const Product = () => {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [addingId, setAddingId] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -180,7 +182,8 @@ const Product = () => {
                   </p>
 
                   <div className="flex gap-2 mt-4">
-                    <button className="flex-1 bg-hunter-green text-cwhite py-2.5 rounded-full text-sm font-medium hover:bg-evergreen active:scale-[0.98] transition-all">
+                    <button className="flex-1 bg-hunter-green text-cwhite py-2.5 rounded-full text-sm font-medium hover:bg-evergreen active:scale-[0.98] transition-all"
+                    onClick={() => navigate("/checkout")}>
                       Buy Now
                     </button>
 

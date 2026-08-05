@@ -1,194 +1,232 @@
-import React, { useEffect, useState } from "react";
-import Navbar from "../../layouts/Navbar";
-import api from "../../axios/api";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../axios/api";
+import Navbar from "../../layouts/Navbar";
+
+const FIELDS = [
+  { key: "fullName", label: "Full Name" },
+  { key: "phone", label: "Phone" },
+  { key: "house", label: "House no." },
+  { key: "street", label: "Street" },
+  { key: "city", label: "City" },
+  { key: "state", label: "State" },
+  { key: "pincode", label: "Pincode" },
+];
 
 const Checkout = () => {
   const navigate = useNavigate();
 
   const [cart, setCart] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [placing, setPlacing] = useState(false);
 
-  const [shippingAddress, setShippingAddress] = useState("");
+  const [address, setAddress] = useState({
+    fullName: "",
+    phone: "",
+    house: "",
+    street: "",
+    city: "",
+    state: "",
+    pincode: "",
+  });
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
 
-  const [loading, setLoading] = useState(false);
-
   useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const res = await api.get("/cart");
+        setCart(res.data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchCart();
   }, []);
 
-  const fetchCart = async () => {
-    try {
-      const res = await api.get("/cart");
-      setCart(res.data);
-    } catch (err) {
-      console.error(err);
-    }
+  const handleChange = (e) => {
+    setAddress({
+      ...address,
+      [e.target.name]: e.target.value,
+    });
   };
 
+  const isAddressComplete = FIELDS.every((f) => address[f.key].trim() !== "");
+
   const placeOrder = async () => {
-    if (!shippingAddress.trim()) {
-      alert("Shipping address is required.");
-      return;
-    }
+    const shippingAddress = `
+${address.fullName}
+${address.phone}
+${address.house}
+${address.street}
+${address.city}
+${address.state}
+${address.pincode}
+`;
 
+    setPlacing(true);
     try {
-      setLoading(true);
-
       const res = await api.post("/orders", {
         shippingAddress,
         paymentMethod,
       });
 
       navigate(`/orders/${res.data.orderId}`);
-    } catch (err) {
-      console.error(err);
-      alert("Unable to place order.");
+    } catch (error) {
+      console.error(error);
     } finally {
-      setLoading(false);
+      setPlacing(false);
     }
   };
 
-  if (!cart) {
+  if (loading) {
     return (
       <>
         <Navbar />
-        <h2 className="text-center mt-10">Loading...</h2>
+        <div className="min-h-[70vh] flex items-center justify-center bg-porcelain">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 rounded-full border-2 border-soft-fawn border-t-hunter-green animate-spin" />
+            <p className="text-olive-bark text-sm tracking-wide">Preparing checkout…</p>
+          </div>
+        </div>
       </>
     );
   }
 
   return (
     <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap');
+        .font-serif-display { font-family: 'Fraunces', serif; }
+        .font-sans-body { font-family: 'Inter', sans-serif; }
+      `}</style>
       <Navbar />
 
-      <div className="max-w-6xl mx-auto p-6 grid md:grid-cols-2 gap-10">
+      <div className="bg-porcelain min-h-screen font-sans-body">
+        <div className="max-w-5xl mx-auto px-5 pt-10 pb-16">
+          <h1 className="font-serif-display text-4xl text-evergreen mb-1">Checkout</h1>
+          <p className="text-olive-bark text-sm mb-8">
+            {cart?.totalItems} item{cart?.totalItems !== 1 ? "s" : ""} · Review before you place your order
+          </p>
 
-        {/* Left */}
+          <div className="grid md:grid-cols-2 gap-8 items-start">
+            {/* Shipping Address */}
+            <div className="bg-cwhite rounded-2xl p-6 shadow-sm border border-soft-fawn/20">
+              <h2 className="font-serif-display text-xl text-evergreen mb-5">Shipping Address</h2>
 
-        <div>
+              <div className="grid grid-cols-2 gap-4">
+                {FIELDS.map((field) => (
+                  <input
+                    key={field.key}
+                    type="text"
+                    name={field.key}
+                    placeholder={field.label + " *"}
+                    value={address[field.key]}
+                    onChange={handleChange}
+                    required
+                    className={`border border-soft-fawn/30 rounded-xl p-3 text-sm text-evergreen placeholder:text-olive-bark/60 focus:outline-none focus:ring-2 focus:ring-hunter-green/40 transition-shadow ${
+                      field.key === "fullName" || field.key === "street" ? "col-span-2" : ""
+                    }`}
+                  />
+                ))}
+              </div>
 
-          <h2 className="text-3xl font-bold mb-6">
-            Checkout
-          </h2>
+              <h2 className="font-serif-display text-lg text-evergreen mt-8 mb-4">Payment Method</h2>
 
-          <label className="font-semibold">
-            Shipping Address
-          </label>
+              <div className="space-y-3">
+                <label
+                  className={`flex items-center gap-3 border rounded-xl p-4 cursor-pointer transition-all ${
+                    paymentMethod === "COD"
+                      ? "border-hunter-green bg-porcelain"
+                      : "border-soft-fawn/30 hover:border-soft-fawn/60"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    value="COD"
+                    checked={paymentMethod === "COD"}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="accent-hunter-green w-4 h-4"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-evergreen">Cash on Delivery</p>
+                    <p className="text-xs text-olive-bark">Pay when your order arrives</p>
+                  </div>
+                </label>
 
-          <textarea
-            rows={6}
-            className="border rounded-lg w-full p-3 mt-2"
-            value={shippingAddress}
-            onChange={(e) =>
-              setShippingAddress(e.target.value)
-            }
-          />
+                <label className="flex items-center gap-3 border border-soft-fawn/20 rounded-xl p-4 opacity-50 cursor-not-allowed">
+                  <input type="radio" disabled className="w-4 h-4" />
+                  <div>
+                    <p className="text-sm font-medium text-olive-bark">UPI</p>
+                    <p className="text-xs text-olive-bark">Coming soon</p>
+                  </div>
+                </label>
 
-          <h3 className="mt-8 font-semibold text-xl">
-            Payment Method
-          </h3>
-
-          <div className="mt-3 space-y-3">
-
-            <label className="flex gap-2">
-
-              <input
-                type="radio"
-                checked={paymentMethod === "COD"}
-                onChange={() =>
-                  setPaymentMethod("COD")
-                }
-              />
-
-              Cash on Delivery
-
-            </label>
-
-            <label className="flex gap-2 text-gray-400">
-
-              <input disabled type="radio" />
-
-              UPI (Coming Soon)
-
-            </label>
-
-            <label className="flex gap-2 text-gray-400">
-
-              <input disabled type="radio" />
-
-              Card (Coming Soon)
-
-            </label>
-
-          </div>
-
-        </div>
-
-        {/* Right */}
-
-        <div className="border rounded-xl p-6 h-fit">
-
-          <h3 className="text-2xl font-bold mb-5">
-            Order Summary
-          </h3>
-
-          {cart.items.map((item) => (
-
-            <div
-              key={item.cartItemId}
-              className="flex justify-between mb-4"
-            >
-
-              <span>
-
-                {item.productName}
-
-                ×
-
-                {item.quantity}
-
-              </span>
-
-              <span>
-
-                ₹{item.subtotal}
-
-              </span>
-
+                <label className="flex items-center gap-3 border border-soft-fawn/20 rounded-xl p-4 opacity-50 cursor-not-allowed">
+                  <input type="radio" disabled className="w-4 h-4" />
+                  <div>
+                    <p className="text-sm font-medium text-olive-bark">Card</p>
+                    <p className="text-xs text-olive-bark">Coming soon</p>
+                  </div>
+                </label>
+              </div>
             </div>
 
-          ))}
+            {/* Order Summary */}
+            <div className="bg-cwhite rounded-2xl p-6 shadow-sm border border-soft-fawn/20 sticky top-6">
+              <h2 className="font-serif-display text-xl text-evergreen mb-5">Order Summary</h2>
 
-          <hr className="my-5" />
+              <div className="max-h-80 overflow-y-auto pr-1 space-y-3">
+                {cart.items.map((item) => (
+                  <div key={item.cartItemId} className="flex items-center gap-3 pb-3 border-b border-porcelain last:border-0">
+                    <div className="w-16 h-16 rounded-lg bg-porcelain overflow-hidden flex-shrink-0">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.productName}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-evergreen truncate">{item.productName}</p>
+                      <p className="text-xs text-olive-bark">Qty: {item.quantity}</p>
+                    </div>
+                    <p className="text-sm font-semibold text-hunter-green">₹{item.subtotal}</p>
+                  </div>
+                ))}
+              </div>
 
-          <div className="flex justify-between font-bold text-xl">
+              <div className="mt-5 pt-4 border-t border-porcelain space-y-2">
+                <div className="flex justify-between text-sm text-olive-bark">
+                  <span>Total Items</span>
+                  <span>{cart.totalItems}</span>
+                </div>
+                <div className="flex justify-between items-baseline pt-2">
+                  <span className="text-evergreen font-medium">Total</span>
+                  <span className="font-serif-display text-2xl text-hunter-green">
+                    ₹{Number(cart.totalPrice).toLocaleString()}
+                  </span>
+                </div>
+              </div>
 
-            <span>Total</span>
+              <button
+                onClick={placeOrder}
+                disabled={!isAddressComplete || placing}
+                className="w-full mt-6 bg-hunter-green text-cwhite py-3.5 rounded-full font-medium hover:bg-evergreen active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {placing ? "Placing order…" : "Place Order"}
+              </button>
 
-            <span>
-
-              ₹{cart.totalPrice}
-
-            </span>
-
+              {!isAddressComplete && (
+                <p className="text-xs text-olive-bark text-center mt-2">
+                  Fill in your shipping address to continue
+                </p>
+              )}
+            </div>
           </div>
-
-          <button
-            disabled={loading}
-            onClick={placeOrder}
-            className="w-full mt-8 bg-hunter-green text-white py-3 rounded-lg"
-          >
-
-            {loading
-              ? "Placing Order..."
-              : "Place Order"}
-
-          </button>
-
         </div>
-
       </div>
     </>
   );

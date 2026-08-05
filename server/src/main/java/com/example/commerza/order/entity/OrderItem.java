@@ -4,6 +4,7 @@ import com.example.commerza.product.entity.Product;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -32,14 +33,20 @@ public class OrderItem {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @NotNull(message = "Quantity is required")
-    @Min(value = 1, message = "Quantity must be at least 1")
-    private Integer quantity;
+    @NotNull(message = "Product name is required")
+    private String productName;
+
+    @NotBlank(message = "Product image is required")
+    private String productImage;
 
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.00", message = "Price cannot be negative")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
+
+    @NotNull(message = "Quantity is required")
+    @Min(value = 1, message = "Quantity must be at least 1")
+    private Integer quantity;
 
     @NotNull(message = "Subtotal is required")
     @DecimalMin(value = "0.00", message = "Subtotal cannot be negative")

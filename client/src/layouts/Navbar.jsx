@@ -94,7 +94,7 @@ const Navbar = () => {
       transition-all duration-200 z-50 overflow-hidden"
               >
                 <button
-                  onClick={() => navigate("/orders")}
+                  onClick={() => navigate("/my-orders")}
                   className="w-full flex items-center gap-3 px-4 py-3 text-left
         hover:bg-gray-50 hover:text-evergreen transition-colors"
                 >

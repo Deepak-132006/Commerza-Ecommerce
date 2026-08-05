@@ -9,6 +9,7 @@ import Cart from "../src/pages/Cart/Cart.jsx";
 import Checkout from "../src/pages/Checkout/Checkout.jsx";
 import Home from "../src/pages/Home/Home.jsx";
 import Order from "./pages/Order/Order.jsx";
+import MyOrders from "./pages/MyOrders/MyOrders.jsx";
 import Favourites from "./pages/Favourites/Favourites.jsx";
 import ForgetPassword from "./pages/Login/ForgetPassword.jsx";
 import NewPassword from "./pages/Login/NewPassword.jsx";
@@ -63,6 +64,14 @@ const App = () => {
           element={
             <ProtectedRoutes>
               <Favourites />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/my-orders"
+          element={
+            <ProtectedRoutes>
+              <MyOrders />
             </ProtectedRoutes>
           }
         />

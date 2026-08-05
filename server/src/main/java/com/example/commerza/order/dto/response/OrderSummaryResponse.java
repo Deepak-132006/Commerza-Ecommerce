@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -12,10 +13,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class OrderSummaryResponse {
-
     private Long orderId;
 
     private String orderNumber;
+
+    private List<OrderProductSummary> products;
+
+    private Integer totalItems;
 
     private OrderStatus status;
 

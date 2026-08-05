@@ -7,6 +7,7 @@ import com.example.commerza.cart.repository.CartRepository;
 import com.example.commerza.order.dto.request.PlaceOrderRequest;
 import com.example.commerza.order.dto.request.UpdateOrderStatusRequest;
 import com.example.commerza.order.dto.response.OrderItemResponse;
+import com.example.commerza.order.dto.response.OrderProductSummary;
 import com.example.commerza.order.dto.response.OrderResponse;
 import com.example.commerza.order.dto.response.OrderSummaryResponse;
 import com.example.commerza.order.entity.Order;
@@ -21,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +47,7 @@ public class OrderService {
         this.productRepository = productRepository;
     }
 
-    private String generateOrderNumber(){
+    private String generateOrderNumber() {
         String companyId = "COM";
 
         long number = ThreadLocalRandom.current()
@@ -53,7 +55,6 @@ public class OrderService {
 
         return companyId + number;
     }
-
 
     @Transactional
     public OrderResponse placeOrder(PlaceOrderRequest request) {
@@ -85,6 +86,7 @@ public class OrderService {
         for (CartItem cartItem : cartItems) {
 
             Product product = cartItem.getProduct();
+
 
             if (product == null) {
                 throw new NoSuchElementException("Product not found");
@@ -127,8 +129,9 @@ public class OrderService {
         // Step 9: Save Order
         orderRepository.save(order);
         // Step 10: Create OrderItems
+
         List<OrderItem> orderItems = new ArrayList<>();
-        for(CartItem cartItem : cartItems){
+        for (CartItem cartItem : cartItems) {
             Product product = cartItem.getProduct();
 
             BigDecimal subtotal = product.getPrice()
@@ -139,16 +142,24 @@ public class OrderService {
                     .product(product)
                     .quantity(cartItem.getQuantity())
                     .price(product.getPrice())
+                    .productImage(product.getImageUrl())
+                    .productName(product.getName())
                     .subtotal(subtotal)
                     .build();
-
             orderItems.add(orderItem);
         }
 
+
         // Step 11: Save OrderItems
         orderItemRepository.saveAll(orderItems);
+        List<OrderItem> savedItems = orderItemRepository.findByOrder(order);
+
+        // Get first product image
+        String productImage = orderItems.isEmpty()
+                ? null
+                : orderItems.get(0).getProductImage();
         // Step 12: Reduce product stock
-        for(CartItem cartItem : cartItems){
+        for (CartItem cartItem : cartItems) {
             Product product = cartItem.getProduct();
             product.setStock(
                     product.getStock() - cartItem.getQuantity()
@@ -165,7 +176,8 @@ public class OrderService {
         List<OrderItemResponse> itemResponses = orderItems.stream()
                 .map(item -> OrderItemResponse.builder()
                         .productId(item.getProduct().getId())
-                        .productName(item.getProduct().getName())
+                        .productName(item.getProductName())
+                        .productImage(item.getProductImage())
                         .quantity(item.getQuantity())
                         .price(item.getPrice())
                         .subtotal(item.getSubtotal())
@@ -176,6 +188,7 @@ public class OrderService {
                 .orderId(order.getId())
                 .orderNumber(order.getOrderNumber())
                 .status(order.getStatus())
+                .productImage(productImage)
                 .totalAmount(order.getTotalAmount())
                 .shippingAddress(order.getShippingAddress())
                 .paymentMethod(order.getPaymentMethod())
@@ -212,24 +225,31 @@ public class OrderService {
             throw new SecurityException("You are not authorized to view this order");
         }
 
-        // Step 4: Get order items
+// Step 4
         List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
 
-        // Step 5: Map OrderItems to DTO
+// First product image
+        String productImage = orderItems.isEmpty()
+                ? null
+                : orderItems.get(0).getProductImage();
+
+// Step 5
         List<OrderItemResponse> itemResponses = orderItems.stream()
                 .map(item -> OrderItemResponse.builder()
                         .productId(item.getProduct().getId())
-                        .productName(item.getProduct().getName())
+                        .productName(item.getProductName())
+                        .productImage(item.getProductImage())
                         .quantity(item.getQuantity())
                         .price(item.getPrice())
                         .subtotal(item.getSubtotal())
                         .build())
                 .toList();
 
-        // Step 6: Return response
+// Step 6
         return OrderResponse.builder()
                 .orderId(order.getId())
                 .orderNumber(order.getOrderNumber())
+                .productImage(productImage)
                 .status(order.getStatus())
                 .totalAmount(order.getTotalAmount())
                 .shippingAddress(order.getShippingAddress())
@@ -256,13 +276,27 @@ public class OrderService {
 
         // Step 3: Map to OrderSummaryResponse
         return orders.stream()
-                .map(order -> OrderSummaryResponse.builder()
-                        .orderId(order.getId())
-                        .orderNumber(order.getOrderNumber())
-                        .status(order.getStatus())
-                        .totalAmount(order.getTotalAmount())
-                        .createdAt(order.getCreatedAt())
-                        .build())
+                .map(order -> {
+
+                    List<OrderProductSummary> products = order.getOrderItems()
+                            .stream()
+                            .map(item -> OrderProductSummary.builder()
+                                    .productId(item.getProduct().getId())
+                                    .productName(item.getProductName())
+                                    .productImage(item.getProductImage())
+                                    .build())
+                            .toList();
+
+                    return OrderSummaryResponse.builder()
+                            .orderId(order.getId())
+                            .orderNumber(order.getOrderNumber())
+                            .products(products)
+                            .totalItems(order.getOrderItems().size())
+                            .status(order.getStatus())
+                            .totalAmount(order.getTotalAmount())
+                            .createdAt(order.getCreatedAt())
+                            .build();
+                })
                 .toList();
     }
 
@@ -290,15 +324,31 @@ public class OrderService {
 
         // Step 4: Map to DTO
         return orders.stream()
-                .map(order -> OrderSummaryResponse.builder()
-                        .orderId(order.getId())
-                        .orderNumber(order.getOrderNumber())
-                        .status(order.getStatus())
-                        .totalAmount(order.getTotalAmount())
-                        .createdAt(order.getCreatedAt())
-                        .build())
+                .map(order -> {
+
+                    List<OrderProductSummary> products = order.getOrderItems()
+                            .stream()
+                            .map(item -> OrderProductSummary.builder()
+                                    .productId(item.getProduct().getId())
+                                    .productName(item.getProductName())
+                                    .productImage(item.getProductImage())
+                                    .build())
+                            .toList();
+
+                    return OrderSummaryResponse.builder()
+                            .orderId(order.getId())
+                            .orderNumber(order.getOrderNumber())
+                            .products(products)
+                            .totalItems(order.getOrderItems().size())
+                            .status(order.getStatus())
+                            .totalAmount(order.getTotalAmount())
+                            .createdAt(order.getCreatedAt())
+                            .build();
+                })
                 .toList();
     }
+
+
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId,
                                            UpdateOrderStatusRequest request) {
@@ -344,6 +394,7 @@ public class OrderService {
                 .map(item -> OrderItemResponse.builder()
                         .productId(item.getProduct().getId())
                         .productName(item.getProduct().getName())
+                        .productImage(item.getProductImage())
                         .quantity(item.getQuantity())
                         .price(item.getPrice())
                         .subtotal(item.getSubtotal())
@@ -422,6 +473,7 @@ public class OrderService {
                 .map(item -> OrderItemResponse.builder()
                         .productId(item.getProduct().getId())
                         .productName(item.getProduct().getName())
+                        .productImage(item.getProductImage())
                         .quantity(item.getQuantity())
                         .price(item.getPrice())
                         .subtotal(item.getSubtotal())
