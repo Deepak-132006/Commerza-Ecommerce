@@ -81,7 +81,6 @@ const Checkout = () => {
   };
 
   const isAddressComplete = FIELDS.every((f) => address[f.key].trim() !== "");
-
   const placeOrder = async () => {
     const shippingAddress = `
 ${address.fullName}
@@ -94,11 +93,25 @@ ${address.pincode}
 `;
 
     setPlacing(true);
+
     try {
-      const res = await api.post("/orders", {
-        shippingAddress,
-        paymentMethod,
-      });
+      let res;
+
+      if (buyNowProduct) {
+        // BUY NOW
+        res = await api.post("/orders/buy-now", {
+          productId: buyNowProduct.id,
+          quantity: 1,
+          shippingAddress,
+          paymentMethod,
+        });
+      } else {
+        // CART CHECKOUT
+        res = await api.post("/orders", {
+          shippingAddress,
+          paymentMethod,
+        });
+      }
 
       navigate(`/orders/${res.data.orderId}`);
     } catch (error) {

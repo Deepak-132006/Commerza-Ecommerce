@@ -25,6 +25,8 @@ public class BuyNowRequest {
     @Size(max = 500, message = "Shipping address cannot exceed 500 characters")
     private String shippingAddress;
 
+
+
     @NotNull(message = "Payment method is required")
     private Payment paymentMethod;
 }

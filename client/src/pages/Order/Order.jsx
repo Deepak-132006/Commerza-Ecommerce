@@ -33,24 +33,6 @@ const Order = () => {
     fetchOrder();
   }, [orderId]);
 
-  useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        const res = await api.get(`/orders/${orderId}`);
-
-        console.log("ORDER:", res.data);
-        console.log("CREATED AT:", res.data.createdAt);
-
-        setOrder(res.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOrder();
-  }, [orderId]);
 
   const cancelOrder = async () => {
     setCancelling(true);
