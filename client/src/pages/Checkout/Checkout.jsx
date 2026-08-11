@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../axios/api";
 import Navbar from "../../layouts/Navbar";
 
@@ -14,11 +14,13 @@ const FIELDS = [
 ];
 
 const Checkout = () => {
-  const navigate = useNavigate();
-
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [placing, setPlacing] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const buyNowProduct = location.state?.buyNowProduct;
 
   const [address, setAddress] = useState({
     fullName: "",
@@ -30,10 +32,34 @@ const Checkout = () => {
     pincode: "",
   });
 
+  const checkoutItems = buyNowProduct
+    ? [
+        {
+          cartItemId: buyNowProduct.id,
+          productName: buyNowProduct.name,
+          imageUrl: buyNowProduct.imageUrl,
+          quantity: 1,
+          subtotal: buyNowProduct.price,
+        },
+      ]
+    : cart?.items || [];
+
+  const totalItems = buyNowProduct ? 1 : cart?.totalItems || 0;
+
+  const totalPrice = buyNowProduct
+    ? buyNowProduct.price
+    : cart?.totalPrice || 0;
+
   const [paymentMethod, setPaymentMethod] = useState("COD");
 
   useEffect(() => {
     const fetchCart = async () => {
+      // Buy Now doesn't need the cart
+      if (buyNowProduct) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = await api.get("/cart");
         setCart(res.data);
@@ -45,7 +71,7 @@ const Checkout = () => {
     };
 
     fetchCart();
-  }, []);
+  }, [buyNowProduct]);
 
   const handleChange = (e) => {
     setAddress({
@@ -89,7 +115,9 @@ ${address.pincode}
         <div className="min-h-[70vh] flex items-center justify-center bg-porcelain">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 rounded-full border-2 border-soft-fawn border-t-hunter-green animate-spin" />
-            <p className="text-olive-bark text-sm tracking-wide">Preparing checkout…</p>
+            <p className="text-olive-bark text-sm tracking-wide">
+              Preparing checkout…
+            </p>
           </div>
         </div>
       </>
@@ -107,15 +135,20 @@ ${address.pincode}
 
       <div className="bg-porcelain min-h-screen font-sans-body">
         <div className="max-w-5xl mx-auto px-5 pt-10 pb-16">
-          <h1 className="font-serif-display text-4xl text-evergreen mb-1">Checkout</h1>
+          <h1 className="font-serif-display text-4xl text-evergreen mb-1">
+            Checkout
+          </h1>
           <p className="text-olive-bark text-sm mb-8">
-            {cart?.totalItems} item{cart?.totalItems !== 1 ? "s" : ""} · Review before you place your order
+            {totalItems} item{totalItems !== 1 ? "s" : ""} · Review before you
+            place your order
           </p>
 
           <div className="grid md:grid-cols-2 gap-8 items-start">
             {/* Shipping Address */}
             <div className="bg-cwhite rounded-2xl p-6 shadow-sm border border-soft-fawn/20">
-              <h2 className="font-serif-display text-xl text-evergreen mb-5">Shipping Address</h2>
+              <h2 className="font-serif-display text-xl text-evergreen mb-5">
+                Shipping Address
+              </h2>
 
               <div className="grid grid-cols-2 gap-4">
                 {FIELDS.map((field) => (
@@ -128,13 +161,17 @@ ${address.pincode}
                     onChange={handleChange}
                     required
                     className={`border border-soft-fawn/30 rounded-xl p-3 text-sm text-evergreen placeholder:text-olive-bark/60 focus:outline-none focus:ring-2 focus:ring-hunter-green/40 transition-shadow ${
-                      field.key === "fullName" || field.key === "street" ? "col-span-2" : ""
+                      field.key === "fullName" || field.key === "street"
+                        ? "col-span-2"
+                        : ""
                     }`}
                   />
                 ))}
               </div>
 
-              <h2 className="font-serif-display text-lg text-evergreen mt-8 mb-4">Payment Method</h2>
+              <h2 className="font-serif-display text-lg text-evergreen mt-8 mb-4">
+                Payment Method
+              </h2>
 
               <div className="space-y-3">
                 <label
@@ -152,8 +189,12 @@ ${address.pincode}
                     className="accent-hunter-green w-4 h-4"
                   />
                   <div>
-                    <p className="text-sm font-medium text-evergreen">Cash on Delivery</p>
-                    <p className="text-xs text-olive-bark">Pay when your order arrives</p>
+                    <p className="text-sm font-medium text-evergreen">
+                      Cash on Delivery
+                    </p>
+                    <p className="text-xs text-olive-bark">
+                      Pay when your order arrives
+                    </p>
                   </div>
                 </label>
 
@@ -177,11 +218,16 @@ ${address.pincode}
 
             {/* Order Summary */}
             <div className="bg-cwhite rounded-2xl p-6 shadow-sm border border-soft-fawn/20 sticky top-6">
-              <h2 className="font-serif-display text-xl text-evergreen mb-5">Order Summary</h2>
+              <h2 className="font-serif-display text-xl text-evergreen mb-5">
+                Order Summary
+              </h2>
 
               <div className="max-h-80 overflow-y-auto pr-1 space-y-3">
-                {cart.items.map((item) => (
-                  <div key={item.cartItemId} className="flex items-center gap-3 pb-3 border-b border-porcelain last:border-0">
+                {checkoutItems.map((item) => (
+                  <div
+                    key={item.cartItemId}
+                    className="flex items-center gap-3 pb-3 border-b border-porcelain last:border-0"
+                  >
                     <div className="w-16 h-16 rounded-lg bg-porcelain overflow-hidden flex-shrink-0">
                       <img
                         src={item.imageUrl}
@@ -190,10 +236,16 @@ ${address.pincode}
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-evergreen truncate">{item.productName}</p>
-                      <p className="text-xs text-olive-bark">Qty: {item.quantity}</p>
+                      <p className="text-sm font-medium text-evergreen truncate">
+                        {item.productName}
+                      </p>
+                      <p className="text-xs text-olive-bark">
+                        Qty: {item.quantity}
+                      </p>
                     </div>
-                    <p className="text-sm font-semibold text-hunter-green">₹{item.subtotal}</p>
+                    <p className="text-sm font-semibold text-hunter-green">
+                      ₹{item.subtotal}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -201,12 +253,12 @@ ${address.pincode}
               <div className="mt-5 pt-4 border-t border-porcelain space-y-2">
                 <div className="flex justify-between text-sm text-olive-bark">
                   <span>Total Items</span>
-                  <span>{cart.totalItems}</span>
+                  <span>{totalItems}</span>
                 </div>
                 <div className="flex justify-between items-baseline pt-2">
                   <span className="text-evergreen font-medium">Total</span>
                   <span className="font-serif-display text-2xl text-hunter-green">
-                    ₹{Number(cart.totalPrice).toLocaleString()}
+                    ₹{Number(totalPrice).toLocaleString()}
                   </span>
                 </div>
               </div>

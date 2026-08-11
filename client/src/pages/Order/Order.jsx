@@ -33,6 +33,25 @@ const Order = () => {
     fetchOrder();
   }, [orderId]);
 
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        const res = await api.get(`/orders/${orderId}`);
+
+        console.log("ORDER:", res.data);
+        console.log("CREATED AT:", res.data.createdAt);
+
+        setOrder(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrder();
+  }, [orderId]);
+
   const cancelOrder = async () => {
     setCancelling(true);
     try {
@@ -52,7 +71,9 @@ const Order = () => {
         <div className="min-h-[70vh] flex items-center justify-center bg-porcelain">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 rounded-full border-2 border-soft-fawn border-t-hunter-green animate-spin" />
-            <p className="text-olive-bark text-sm tracking-wide">Loading order…</p>
+            <p className="text-olive-bark text-sm tracking-wide">
+              Loading order…
+            </p>
           </div>
         </div>
       </>
@@ -65,13 +86,34 @@ const Order = () => {
         <Navbar />
         <div className="min-h-[70vh] flex flex-col items-center justify-center bg-porcelain px-6 text-center">
           <div className="w-16 h-16 rounded-full bg-cwhite border border-soft-fawn/40 flex items-center justify-center mb-5">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#355834" strokeWidth="1.5">
-              <circle cx="11" cy="11" r="7" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="m20 20-3.5-3.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              width="26"
+              height="26"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#355834"
+              strokeWidth="1.5"
+            >
+              <circle
+                cx="11"
+                cy="11"
+                r="7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="m20 20-3.5-3.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </div>
-          <h2 className="font-serif-display text-2xl text-evergreen mb-1">Order not found</h2>
-          <p className="text-olive-bark text-sm">Double-check the order link and try again.</p>
+          <h2 className="font-serif-display text-2xl text-evergreen mb-1">
+            Order not found
+          </h2>
+          <p className="text-olive-bark text-sm">
+            Double-check the order link and try again.
+          </p>
         </div>
       </>
     );
@@ -92,8 +134,12 @@ const Order = () => {
         <div className="max-w-4xl mx-auto px-5 pt-10 pb-16">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
             <div>
-              <h1 className="font-serif-display text-4xl text-evergreen">Order Details</h1>
-              <p className="text-olive-bark text-sm mt-1">#{order.orderNumber}</p>
+              <h1 className="font-serif-display text-4xl text-evergreen">
+                Order Details
+              </h1>
+              <p className="text-olive-bark text-sm mt-1">
+                #{order.orderNumber}
+              </p>
             </div>
             <span
               className={`px-4 py-1.5 rounded-full text-xs font-semibold border tracking-wide ${statusStyle}`}
@@ -106,11 +152,17 @@ const Order = () => {
           <div className="bg-cwhite rounded-2xl p-6 shadow-sm border border-soft-fawn/20 mb-8">
             <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
               <div>
-                <p className="text-xs text-olive-bark uppercase tracking-wide mb-1">Payment</p>
-                <p className="text-evergreen font-medium">{order.paymentMethod}</p>
+                <p className="text-xs text-olive-bark uppercase tracking-wide mb-1">
+                  Payment
+                </p>
+                <p className="text-evergreen font-medium">
+                  {order.paymentMethod}
+                </p>
               </div>
               <div>
-                <p className="text-xs text-olive-bark uppercase tracking-wide mb-1">Date</p>
+                <p className="text-xs text-olive-bark uppercase tracking-wide mb-1">
+                  Date
+                </p>
                 <p className="text-evergreen font-medium">
                   {new Date(order.createdAt).toLocaleString()}
                 </p>
@@ -135,7 +187,9 @@ const Order = () => {
           </div>
 
           {/* Products */}
-          <h2 className="font-serif-display text-2xl text-evergreen mb-4">Products</h2>
+          <h2 className="font-serif-display text-2xl text-evergreen mb-4">
+            Products
+          </h2>
           <div className="space-y-4 mb-8">
             {order.items.map((item) => (
               <div
@@ -151,11 +205,15 @@ const Order = () => {
                 </div>
 
                 <div className="flex-1 flex flex-col justify-center">
-                  <h3 className="font-medium text-evergreen">{item.productName}</h3>
+                  <h3 className="font-medium text-evergreen">
+                    {item.productName}
+                  </h3>
                   <p className="text-sm text-olive-bark mt-1">
                     ₹{item.price} · Qty {item.quantity}
                   </p>
-                  <p className="font-semibold text-hunter-green mt-1">₹{item.subtotal}</p>
+                  <p className="font-semibold text-hunter-green mt-1">
+                    ₹{item.subtotal}
+                  </p>
                 </div>
               </div>
             ))}
@@ -163,7 +221,9 @@ const Order = () => {
 
           {/* Shipping address */}
           <div className="bg-cwhite rounded-2xl p-6 shadow-sm border border-soft-fawn/20">
-            <h2 className="font-serif-display text-xl text-evergreen mb-3">Shipping Address</h2>
+            <h2 className="font-serif-display text-xl text-evergreen mb-3">
+              Shipping Address
+            </h2>
             <p className="whitespace-pre-line text-olive-bark leading-relaxed">
               {order.shippingAddress}
             </p>

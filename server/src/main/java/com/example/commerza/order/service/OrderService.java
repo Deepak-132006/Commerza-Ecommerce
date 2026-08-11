@@ -4,6 +4,7 @@ import com.example.commerza.cart.entity.Cart;
 import com.example.commerza.cart.entity.CartItem;
 import com.example.commerza.cart.repository.CartItemRepository;
 import com.example.commerza.cart.repository.CartRepository;
+import com.example.commerza.order.dto.request.BuyNowRequest;
 import com.example.commerza.order.dto.request.PlaceOrderRequest;
 import com.example.commerza.order.dto.request.UpdateOrderStatusRequest;
 import com.example.commerza.order.dto.response.OrderItemResponse;
@@ -481,6 +482,100 @@ public class OrderService {
                 .toList();
 
         // Step 9: Return Response
+        return OrderResponse.builder()
+                .orderId(order.getId())
+                .orderNumber(order.getOrderNumber())
+                .status(order.getStatus())
+                .totalAmount(order.getTotalAmount())
+                .shippingAddress(order.getShippingAddress())
+                .paymentMethod(order.getPaymentMethod())
+                .createdAt(order.getCreatedAt())
+                .items(itemResponses)
+                .build();
+    }
+
+    @Transactional
+    public OrderResponse buyNow(BuyNowRequest request) {
+
+        // Step 1: Get logged-in user
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        User user = (User) auth.getPrincipal();
+
+        // Step 2: Find product
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() ->
+                        new NoSuchElementException("Product not found"));
+
+        // Step 3: Validate product
+        if (!product.isActive()) {
+            throw new IllegalArgumentException(
+                    product.getName() + " is inactive"
+            );
+        }
+
+        // Step 4: Validate stock
+        if (product.getStock() < request.getQuantity()) {
+            throw new IllegalArgumentException(
+                    "Only " + product.getStock()
+                            + " item(s) available for "
+                            + product.getName()
+            );
+        }
+
+        // Step 5: Calculate subtotal
+        BigDecimal subtotal = product.getPrice()
+                .multiply(BigDecimal.valueOf(request.getQuantity()));
+
+        // Step 6: Create Order
+        Order order = Order.builder()
+                .user(user)
+                .orderNumber(generateOrderNumber())
+                .status(OrderStatus.PENDING)
+                .paymentMethod(request.getPaymentMethod())
+                .shippingAddress(request.getShippingAddress())
+                .totalAmount(subtotal)
+                .build();
+
+        // Step 7: Save Order
+        orderRepository.save(order);
+
+        // Step 8: Create OrderItem
+        OrderItem orderItem = OrderItem.builder()
+                .order(order)
+                .product(product)
+                .quantity(request.getQuantity())
+                .price(product.getPrice())
+                .subtotal(subtotal)
+                .build();
+
+        // Step 9: Save OrderItem
+        orderItemRepository.save(orderItem);
+
+        // Step 10: Reduce stock
+        product.setStock(
+                product.getStock() - request.getQuantity()
+        );
+
+        productRepository.save(product);
+
+        // Step 11: Build OrderItemResponse
+        List<OrderItemResponse> itemResponses = List.of(
+                OrderItemResponse.builder()
+                        .productId(product.getId())
+                        .productName(product.getName())
+                        .quantity(orderItem.getQuantity())
+                        .price(orderItem.getPrice())
+                        .subtotal(orderItem.getSubtotal())
+                        .build()
+        );
+
+        // Step 12: Return OrderResponse
         return OrderResponse.builder()
                 .orderId(order.getId())
                 .orderNumber(order.getOrderNumber())

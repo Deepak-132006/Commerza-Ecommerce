@@ -1,5 +1,6 @@
 package com.example.commerza.order.controller;
 
+import com.example.commerza.order.dto.request.BuyNowRequest;
 import com.example.commerza.order.dto.request.PlaceOrderRequest;
 import com.example.commerza.order.dto.request.UpdateOrderStatusRequest;
 import com.example.commerza.order.dto.response.OrderResponse;
@@ -69,5 +70,16 @@ public class OrderController {
 
         OrderResponse response = orderService.cancelOrder(orderId);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/orders/buy-now")
+    public ResponseEntity<OrderResponse> buyNow(
+            @Valid @RequestBody BuyNowRequest request) {
+
+        OrderResponse response = orderService.buyNow(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 }

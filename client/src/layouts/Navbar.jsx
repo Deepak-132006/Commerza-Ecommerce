@@ -180,7 +180,7 @@ const Navbar = () => {
           <div className="hover:-translate-y-1.5 duration-150">
             <div
               className="py-6 px-8 flex justify-between items-center cursor-pointer hover:-translate-y-1.5 duration-150 hover:text-olive-bark"
-              onClick={() => navigate("/favorites")}
+              onClick={() => navigate("/my-orders")}
             >
               <p className="font-sans text-[18px]">My Orders</p>
               <img src={Arrow} className="w-3" alt="" />
