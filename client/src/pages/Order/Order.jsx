@@ -17,6 +17,7 @@ const Order = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -32,7 +33,61 @@ const Order = () => {
 
     fetchOrder();
   }, [orderId]);
+  const payNow = async () => {
+    setPaying(true);
 
+    try {
+      const res = await api.post("/payments/create-order", {
+        orderId: order.orderId,
+      });
+
+      const payment = res.data;
+
+      const options = {
+        key: payment.keyId,
+        amount: Number(payment.amount) * 100,
+        currency: payment.currency,
+        name: "Commerza",
+        description: `Payment for Order #${order.orderNumber}`,
+        order_id: payment.razorpayOrderId,
+
+        handler: async (response) => {
+          try {
+            const verifyResponse = await api.post("/payments/verify", {
+              orderId: order.orderId,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
+            setOrder(verifyResponse.data);
+          } catch (err) {
+            console.error("Payment verification failed:", err);
+          }
+        },
+
+        theme: {
+          color: "#355834",
+        },
+      };
+
+      if (!window.Razorpay) {
+        throw new Error("Razorpay Checkout script is not loaded");
+      }
+
+      const razorpay = new window.Razorpay(options);
+
+      razorpay.on("payment.failed", (response) => {
+        console.error("Payment failed:", response.error);
+      });
+
+      razorpay.open();
+    } catch (err) {
+      console.error("Failed to start payment:", err);
+    } finally {
+      setPaying(false);
+    }
+  };
 
   const cancelOrder = async () => {
     setCancelling(true);
@@ -167,6 +222,15 @@ const Order = () => {
               </button>
             )}
           </div>
+
+          {order.status === "PENDING" && order.paymentMethod === "RAZORPAY" && (
+            <button
+              onClick={payNow}
+              className="w-full sm:w-auto mt-6 mr-3 bg-hunter-green text-white px-6 py-2.5 rounded-full font-medium hover:opacity-90 active:scale-[0.97] transition-all"
+            >
+              Pay Now
+            </button>
+          )}
 
           {/* Products */}
           <h2 className="font-serif-display text-2xl text-evergreen mb-4">

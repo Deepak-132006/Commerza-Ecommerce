@@ -418,70 +418,75 @@ public class OrderService {
     @Transactional
     public OrderResponse cancelOrder(Long orderId) {
 
-        // Step 1: Get Logged-in User
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        // Step 1: Get logged-in user
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
 
-        if (auth == null || !auth.isAuthenticated()) {
-            throw new RuntimeException("User not authenticated");
+        if (auth == null) {
+            throw new RuntimeException("User not found");
         }
 
         User user = (User) auth.getPrincipal();
 
-        // Step 2: Find Order
+        // Step 2: Find order
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() ->
-                        new NoSuchElementException("Order not found"));
+                        new NoSuchElementException("Order not found")
+                );
 
-        // Step 3: Verify Ownership
+        // Step 3: Verify ownership
         if (!order.getUser().getId().equals(user.getId())) {
-            throw new SecurityException("You are not authorized to cancel this order");
+            throw new RuntimeException("You cannot cancel this order");
         }
 
-        // Step 4: Allow only PENDING or CONFIRMED
-        if (order.getStatus() != OrderStatus.PENDING &&
-                order.getStatus() != OrderStatus.CONFIRMED) {
-
-            throw new IllegalStateException(
-                    "Only pending or confirmed orders can be cancelled");
-        }
-
-        // Step 5: Restore Product Stock
-        List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
-
-        for (OrderItem item : orderItems) {
-
-            Product product = item.getProduct();
-
-            product.setStock(
-                    product.getStock() + item.getQuantity()
+        // Step 4: Only PENDING orders can be cancelled
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new IllegalArgumentException(
+                    "Only pending orders can be cancelled"
             );
         }
 
-        productRepository.saveAll(
-                orderItems.stream()
-                        .map(OrderItem::getProduct)
-                        .toList()
-        );
+        // Step 5: Get order items
+        List<OrderItem> orderItems =
+                orderItemRepository.findByOrder(order);
 
-        // Step 6: Update Status
+        // Step 6: Restore reserved stock
+        for (OrderItem orderItem : orderItems) {
+
+            Product product = orderItem.getProduct();
+
+            product.setStock(
+                    product.getStock() + orderItem.getQuantity()
+            );
+
+            productRepository.save(product);
+        }
+
+        // Step 7: Change order status
         order.setStatus(OrderStatus.CANCELLED);
 
-        // Step 7: Save Order
+        // Step 8: Save order
         orderRepository.save(order);
 
-        // Step 8: Build Response
-        List<OrderItemResponse> itemResponses = orderItems.stream()
-                .map(item -> OrderItemResponse.builder()
-                        .productId(item.getProduct().getId())
-                        .productName(item.getProduct().getName())
-                        .productImage(item.getProductImage())
-                        .quantity(item.getQuantity())
-                        .price(item.getPrice())
-                        .subtotal(item.getSubtotal())
-                        .build())
-                .toList();
+        // Step 9: Build OrderResponse
+        List<OrderItemResponse> itemResponses = new ArrayList<>();
 
-        // Step 9: Return Response
+        for (OrderItem item : orderItems) {
+
+            OrderItemResponse itemResponse =
+                    OrderItemResponse.builder()
+
+                            .productId(item.getProduct().getId())
+                            .productName(item.getProduct().getName())
+                            .productImage(item.getProduct().getImageUrl())
+                            .quantity(item.getQuantity())
+                            .price(item.getPrice())
+                            .subtotal(item.getSubtotal())
+                            .build();
+
+            itemResponses.add(itemResponse);
+        }
+
         return OrderResponse.builder()
                 .orderId(order.getId())
                 .orderNumber(order.getOrderNumber())
