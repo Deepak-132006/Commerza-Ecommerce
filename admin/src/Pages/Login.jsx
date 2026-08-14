@@ -1,167 +1,122 @@
-import React, { useContext } from "react";
-import Navbar from "../../layouts/Navbar";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Logo_Round from "../../assets/logo/Logo-NoBG.png";
-import { useState } from "react";
-import Show from "../../assets/icons/show.png";
-import Hide from "../../assets/icons/hide.png";
-import api from "../../axios/api";
-import { AuthContext } from "../../context/AuthProvider";
+import toast from "react-hot-toast";
+import { Lock, Mail, ShieldCheck, Loader2 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [validEmail, setValidEmail] = useState(false);
-  const [validPassword, setValidPassword] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const { setIsLoggedIn } = useContext(AuthContext);
-  const togglePassword = () => {
-    setShowPassword((prev) => !prev);
-  };
-
-  const validatePassword = (password) => {
-    const regex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=\[\]{};':"\\|,.<>\/~`])[A-Za-z\d@$!%*?&^#()_+\-=\[\]{};':"\\|,.<>\/~`]{8,}$/;
-
-    setValidPassword(regex.test(password));
-  };
-
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    setValidEmail(emailRegex.test(email));
-  };
-
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email.trim() || !password) return;
+    setSubmitting(true);
+    setError("");
     try {
-      const res = await api.post("/auth/login", {
-        email,
-        password,
-      });
-      localStorage.setItem("accessToken", res.data.accessToken);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
-      localStorage.setItem("name", res.data.name);
-      localStorage.setItem("email", res.data.email);
-      localStorage.setItem("role", res.data.role);
-
-      setIsLoggedIn(true);
-
-      navigate("/");
-    } catch (error) {
-      console.log(error.response?.data?.message || "Something went wrong");
+      await login(email.trim(), password);
+      toast.success("Welcome back");
+      navigate("/", { replace: true });
+    } catch (err) {
+      console.error(err);
+      const message =
+        err.response?.data?.message || err.message || "Couldn't sign in. Check your credentials.";
+      setError(message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="bg-porcelain h-screen">
-      <div>
-        <Navbar />
-      </div>
-      <div>
-        <div className="mt-10">
-          <div>
-            <div className="text-center text-5xl font-inter [word-spacing:8px]">
-              <p>
-                The Art of <br />
-                Smart Shopping
-              </p>
-            </div>
-            <div className="text-center mt-3 text-md font-exo">
-              <p>Explore the collection, express yourself</p>
-            </div>
+    <div
+      className="min-h-screen flex items-center justify-center px-5 font-body"
+      style={{ backgroundColor: "var(--color-evergreen)" }}
+    >
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col items-center mb-8">
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
+            style={{ backgroundColor: "var(--color-hunter-green)" }}
+          >
+            <ShieldCheck size={22} style={{ color: "var(--color-cwhite)" }} />
           </div>
-          <div className="mt-5 flex flex-col gap-5 p-8 border-2 border-gray-200 rounded-3xl w-[350px] justify-center m-auto">
-            <div>
-              <div>
-                {email.length > 0 && !validEmail && (
-                  <p className="text-[12px] text-red-600 font-exo m-2 ">
-                    Invalid email id
-                  </p>
-                )}
-              </div>
+          <h1 className="font-display text-2xl tracking-tight" style={{ color: "var(--color-cwhite)" }}>
+            Commerza Admin
+          </h1>
+          <p className="text-xs mt-1" style={{ color: "rgba(253,253,255,0.55)" }}>
+            Sign in to manage the store
+          </p>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-xl p-6 space-y-4"
+          style={{ backgroundColor: "var(--color-cwhite)" }}
+        >
+          {error && (
+            <div
+              className="text-xs rounded-md px-3 py-2"
+              style={{ backgroundColor: "rgba(180,60,50,0.1)", color: "#b43c32" }}
+            >
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: "var(--color-evergreen)" }}>
+              Email
+            </label>
+            <div className="relative">
+              <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--color-olive-bark)" }} />
               <input
-                required
                 type="email"
+                required
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  validateEmail(e.target.value);
-                }}
-                placeholder="Enter your email"
-                className="p-3 bg-white border-[2px] rounded-2xl border-gray-200 focus:outline-blue-700 focus:outline-2 w-full"
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@commerza.com"
+                className="w-full rounded-lg pl-9 pr-3 py-2.5 text-sm outline-none border focus:ring-2"
+                style={{ borderColor: "rgba(194,168,120,0.35)", color: "var(--color-evergreen)" }}
               />
             </div>
-            <div>
-              <div>
-                {password.length > 0 && !validPassword && (
-                  <p className="text-[12px] text-red-600 font-exo m-2 ">
-                    Include letters, numbers & special symbols {"(8 - 12)"}
-                  </p>
-                )}
-              </div>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    validatePassword(e.target.value);
-                  }}
-                  placeholder="Choose your password"
-                  className="p-3 pr-10 bg-white border-2 rounded-2xl border-gray-200 w-full focus:outline-blue-700 focus:outline-2"
-                />
+          </div>
 
-                <button
-                  type="button"
-                  onClick={togglePassword}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
-                >
-                  {showPassword ? (
-                    <img className="w-5" src={Show} alt="" />
-                  ) : (
-                    <img className="w-5" src={Hide} alt="" />
-                  )}
-                </button>
-              </div>
-            </div>
-            <div className="m-auto">
-              <p className="text-[14px]">
-                Forget Password?{" "}
-                <span
-                  className="underline text-hunter-green cursor-pointer"
-                  onClick={() => navigate("/forget")}
-                >
-                  click here
-                </span>
-              </p>
-            </div>
-            <div>
-              <button
-                className="w-full bg-hunter-green p-3 text-[16px] text-porcelain rounded-md hover:bg-evergreen hover:cursor-pointer"
-                onClick={handleLogin}
-              >
-                Login
-              </button>
-            </div>
-            <div>
-              <p className="flex gap-1 justify-center">
-                Don't have an account?{" "}
-                <span
-                  className="underline hover:cursor-pointer decoration-1.5 decoration-hunter-green text-hunter-green "
-                  onClick={() => navigate("/register")}
-                >
-                  register
-                </span>
-              </p>
+          <div>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: "var(--color-evergreen)" }}>
+              Password
+            </label>
+            <div className="relative">
+              <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--color-olive-bark)" }} />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded-lg pl-9 pr-3 py-2.5 text-sm outline-none border focus:ring-2"
+                style={{ borderColor: "rgba(194,168,120,0.35)", color: "var(--color-evergreen)" }}
+              />
             </div>
           </div>
-        </div>
-        <div>
-          <div className="mt-10 flex justify-center">
-            <img src={Logo_Round} className="w-10" alt="" />
-          </div>
-        </div>
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-transform active:scale-[0.99] disabled:opacity-60"
+            style={{ backgroundColor: "var(--color-hunter-green)", color: "var(--color-cwhite)" }}
+          >
+            {submitting ? <Loader2 size={15} className="animate-spin" /> : null}
+            {submitting ? "Signing in…" : "Sign in"}
+          </button>
+        </form>
+
+        <p className="text-center text-[11px] mt-5" style={{ color: "rgba(253,253,255,0.4)" }}>
+          Admin access only — accounts are provisioned separately.
+        </p>
       </div>
     </div>
   );

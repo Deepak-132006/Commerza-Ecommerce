@@ -53,6 +53,19 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("COD");
 
   useEffect(() => {
+    const script = document.createElement("script");
+
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchCart = async () => {
       // Buy Now doesn't need the cart
       if (buyNowProduct) {
@@ -98,7 +111,6 @@ ${address.pincode}
       let res;
 
       if (buyNowProduct) {
-        // BUY NOW
         res = await api.post("/orders/buy-now", {
           productId: buyNowProduct.id,
           quantity: 1,
@@ -106,21 +118,81 @@ ${address.pincode}
           paymentMethod,
         });
       } else {
-        // CART CHECKOUT
         res = await api.post("/orders", {
           shippingAddress,
           paymentMethod,
         });
       }
 
-      navigate(`/orders/${res.data.orderId}`);
+      const orderId = res.data.orderId;
+
+      // COD → no Razorpay
+      if (paymentMethod === "COD") {
+        navigate(`/orders/${orderId}`);
+        return;
+      }
+
+      // Create Razorpay payment order
+      const paymentRes = await api.post("/payments/create-order", {
+        orderId: orderId,
+      });
+
+      const paymentData = paymentRes.data;
+
+      const options = {
+        key: paymentData.keyId,
+
+        amount: paymentData.amount * 100,
+
+        currency: paymentData.currency,
+
+        name: "Commerza",
+
+        description: `Order ${orderId}`,
+
+        order_id: paymentData.razorpayOrderId,
+
+        handler: async function (response) {
+          try {
+            const verifyRes = await api.post("/payments/verify", {
+              orderId: orderId,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
+            navigate(`/orders/${verifyRes.data.orderId}`);
+          } catch (error) {
+            console.error("Payment verification failed:", error);
+            alert("Payment verification failed");
+          }
+        },
+
+        prefill: {
+          name: address.fullName,
+          contact: address.phone,
+        },
+
+        theme: {
+          color: "#14532d",
+        },
+
+        modal: {
+          ondismiss: function () {
+            console.log("Razorpay checkout closed");
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+
+      razorpay.open();
     } catch (error) {
-      console.error(error);
+      console.error("Order/payment failed:", error);
     } finally {
       setPlacing(false);
     }
   };
-
   if (loading) {
     return (
       <>
@@ -211,19 +283,29 @@ ${address.pincode}
                   </div>
                 </label>
 
-                <label className="flex items-center gap-3 border border-soft-fawn/20 rounded-xl p-4 opacity-50 cursor-not-allowed">
-                  <input type="radio" disabled className="w-4 h-4" />
-                  <div>
-                    <p className="text-sm font-medium text-olive-bark">UPI</p>
-                    <p className="text-xs text-olive-bark">Coming soon</p>
-                  </div>
-                </label>
+                <label
+                  className={`flex items-center gap-3 border rounded-xl p-4 cursor-pointer transition-all ${
+                    paymentMethod === "UPI"
+                      ? "border-hunter-green bg-porcelain"
+                      : "border-soft-fawn/30 hover:border-soft-fawn/60"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    value="UPI"
+                    checked={paymentMethod === "UPI"}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="accent-hunter-green w-4 h-4"
+                  />
 
-                <label className="flex items-center gap-3 border border-soft-fawn/20 rounded-xl p-4 opacity-50 cursor-not-allowed">
-                  <input type="radio" disabled className="w-4 h-4" />
                   <div>
-                    <p className="text-sm font-medium text-olive-bark">Card</p>
-                    <p className="text-xs text-olive-bark">Coming soon</p>
+                    <p className="text-sm font-medium text-evergreen">
+                      Razorpay
+                    </p>
+
+                    <p className="text-xs text-olive-bark">
+                      UPI, Cards, Net Banking & more
+                    </p>
                   </div>
                 </label>
               </div>

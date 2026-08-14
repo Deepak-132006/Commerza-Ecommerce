@@ -1,1 +1,25 @@
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@100..800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-porcelain: #f1f5f2;
+  --color-soft-fawn: #c2a878;
+  --color-olive-bark: #6e633d;
+  --color-cwhite: #fdfdff;
+  --color-hunter-green: #355834;
+  --color-evergreen: #14281d;
+
+  --font-sora: "Sora", sans-serif;
+  --font-inter: "Inter", sans-serif;
+}
+
+/* Admin uses the same brand palette as the client, but leans on Sora for
+   headings/labels (control-panel feel) and Inter for dense tabular data —
+   deliberately not the Fraunces serif the storefront uses. */
+.font-display { font-family: var(--font-sora); }
+.font-body { font-family: var(--font-inter); }
+
+body {
+  font-family: var(--font-inter);
+  background-color: var(--color-porcelain);
+}

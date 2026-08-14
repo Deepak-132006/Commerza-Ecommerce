@@ -226,9 +226,10 @@ const Order = () => {
           {order.status === "PENDING" && order.paymentMethod === "RAZORPAY" && (
             <button
               onClick={payNow}
+              disabled={paying}
               className="w-full sm:w-auto mt-6 mr-3 bg-hunter-green text-white px-6 py-2.5 rounded-full font-medium hover:opacity-90 active:scale-[0.97] transition-all"
             >
-              Pay Now
+              {paying ? "Opening Payment..." : "Pay Now"}
             </button>
           )}
 
