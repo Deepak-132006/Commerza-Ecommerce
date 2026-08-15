@@ -8,8 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    // No dedicated "me" endpoint was listed, so we trust the stored token
-    // and the last-known user info saved at login time.
+
     const token = localStorage.getItem("admin_access_token");
     const storedUser = localStorage.getItem("admin_user");
     if (token && storedUser) {

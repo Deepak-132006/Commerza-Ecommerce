@@ -6,6 +6,7 @@ import { useState } from "react";
 import Show from "../../assets/icons/show.png";
 import Hide from "../../assets/icons/hide.png";
 import api from "../../axios/api";
+import toast from "react-hot-toast";
 import { AuthContext } from "../../context/AuthProvider";
 
 const Login = () => {
@@ -46,9 +47,10 @@ const Login = () => {
       localStorage.setItem("role", res.data.role);
 
       setIsLoggedIn(true);
-
+      toast.success("Welcome back");
       navigate("/");
     } catch (error) {
+      toast.error("User doesn't exist")
       console.log(error.response?.data?.message || "Something went wrong");
     }
   };
