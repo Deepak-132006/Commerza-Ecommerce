@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "/api/v1",
+  baseURL: `${import.meta.env.VITE_API_URL}/api/v1`,
 });
 
 api.interceptors.request.use((config) => {
@@ -18,21 +18,17 @@ api.interceptors.response.use(
   (response) => response,
 
   async (error) => {
-
     const originalRequest = error.config;
 
-    // Don't refresh token for login/refresh endpoints
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
       !originalRequest.url.includes("/auth/login") &&
       !originalRequest.url.includes("/auth/refresh-token")
     ) {
-
       originalRequest._retry = true;
 
       try {
-
         const refreshToken = localStorage.getItem("refreshToken");
 
         if (!refreshToken) {
@@ -40,7 +36,7 @@ api.interceptors.response.use(
         }
 
         const res = await axios.post(
-          "/api/v1/auth/refresh-token",
+          `${import.meta.env.VITE_API_URL}/api/v1/auth/refresh-token`,
           {
             refreshToken,
           }
@@ -48,10 +44,7 @@ api.interceptors.response.use(
 
         const newAccessToken = res.data.accessToken;
 
-        localStorage.setItem(
-          "accessToken",
-          newAccessToken
-        );
+        localStorage.setItem("accessToken", newAccessToken);
 
         originalRequest.headers.Authorization =
           `Bearer ${newAccessToken}`;
@@ -59,7 +52,6 @@ api.interceptors.response.use(
         return api(originalRequest);
 
       } catch (err) {
-
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
 
