@@ -15,6 +15,8 @@ const Register = () => {
   const [validPassword, setValidPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loader, setLoader] = useState(true);
+  const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
 
   const togglePassword = () => {
@@ -43,14 +45,30 @@ const Register = () => {
       const res = await api.post("/auth/register", {
         name,
         email,
-        password
+        password,
       });
-      navigate("/login")
+      navigate("/login");
       console.log(res.data.message);
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
   };
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-[70vh] flex items-center justify-center bg-porcelain">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 rounded-full border-2 border-soft-fawn border-t-hunter-green animate-spin" />
+            <p className="text-olive-bark text-sm tracking-wide">
+              Loading your orders…
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <div className="bg-porcelain h-screen">
@@ -145,8 +163,10 @@ const Register = () => {
               </div>
             </div>
             <div>
-              <button className="w-full bg-hunter-green p-3 text-[16px] text-porcelain rounded-md hover:bg-evergreen hover:cursor-pointer"
-              onClick={handleRegister}>
+              <button
+                className="w-full bg-hunter-green p-3 text-[16px] text-porcelain rounded-md hover:bg-evergreen hover:cursor-pointer"
+                onClick={handleRegister}
+              >
                 Register
               </button>
             </div>

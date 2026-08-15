@@ -15,6 +15,7 @@ const Login = () => {
   const [validEmail, setValidEmail] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { setIsLoggedIn } = useContext(AuthContext);
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
@@ -50,11 +51,24 @@ const Login = () => {
       toast.success("Welcome back");
       navigate("/");
     } catch (error) {
-      toast.error("User doesn't exist")
+      toast.error("User doesn't exist");
       console.log(error.response?.data?.message || "Something went wrong");
     }
   };
 
+    if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="min-h-[70vh] flex items-center justify-center bg-porcelain">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 rounded-full border-2 border-soft-fawn border-t-hunter-green animate-spin" />
+            <p className="text-olive-bark text-sm tracking-wide">Loading…</p>
+          </div>
+        </div>
+      </>
+    );
+  }
   return (
     <div className="bg-porcelain h-screen">
       <div>
