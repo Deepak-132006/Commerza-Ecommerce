@@ -15,7 +15,7 @@ const Register = () => {
   const [validPassword, setValidPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loader, setLoader] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -42,6 +42,7 @@ const Register = () => {
 
   const handleRegister = async () => {
     try {
+      setLoader(true);
       const res = await api.post("/auth/register", {
         name,
         email,
@@ -49,11 +50,10 @@ const Register = () => {
       });
       navigate("/login");
       console.log(res.data.message);
-      setLoading(false);
     } catch (error) {
       console.error(error);
-      setLoading(false);
-
+    } finally {
+      setLoader(false);
     }
   };
 

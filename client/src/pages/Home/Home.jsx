@@ -77,52 +77,90 @@ const Home = () => {
       try {
         setCatLoading(true);
         setCatError("");
+
         const res = await api.get("/categories");
-        console.log("CATEGORIES RESPONSE:", res.data);
-        console.log("IS ARRAY:", Array.isArray(res.data));
+
+        if (!Array.isArray(res.data)) {
+          throw new Error("Invalid categories response");
+        }
+
         setCategories(res.data);
       } catch (err) {
-        console.error(err);
-        setCatError("Couldn't load categories");
+        console.error("Categories error:", err);
+
+        setCategories([]);
+        setCatError(err.response?.data?.message || "Couldn't load categories");
       } finally {
         setCatLoading(false);
       }
     };
+
     fetchCategories();
   }, []);
 
-  useEffect(() => {
-    const fetchFeaturedAndFavourites = async () => {
-      try {
-        setFeatLoading(true);
-        setFeatError("");
+  // Fetch featured products
+useEffect(() => {
+  const fetchFeaturedProducts = async () => {
+    try {
+      setFeatLoading(true);
+      setFeatError("");
 
-        const [productsRes, favouritesRes] = await Promise.allSettled([
-          api.get("/products"),
-          api.get("/favourites"),
-        ]);
+      const res = await api.get("/products");
 
-        if (productsRes.status === "fulfilled") {
-          setFeatured((productsRes.value.data || []).slice(0, 8));
-        } else {
-          throw productsRes.reason;
-        }
+      console.log("PRODUCTS RESPONSE:", res.data);
 
-        if (favouritesRes.status === "fulfilled") {
-          const favIds = (favouritesRes.value.data || []).map(
-            (f) => f.productId ?? f.product?.id ?? f.id,
-          );
-          setFavouriteIds(new Set(favIds));
-        }
-      } catch (err) {
-        console.error(err);
-        setFeatError("Couldn't load featured products");
-      } finally {
-        setFeatLoading(false);
+      if (!Array.isArray(res.data)) {
+        throw new Error("Invalid products response");
       }
-    };
-    fetchFeaturedAndFavourites();
-  }, []);
+
+      setFeatured(res.data.slice(0, 8));
+    } catch (err) {
+      console.error("Featured products error:", err);
+
+      setFeatured([]);
+      setFeatError(
+        err.response?.data?.message ||
+          "Couldn't load featured products"
+      );
+    } finally {
+      setFeatLoading(false);
+    }
+  };
+
+  fetchFeaturedProducts();
+}, []);
+
+// Fetch favourites only when user is logged in
+useEffect(() => {
+  const fetchFavourites = async () => {
+    const token = localStorage.getItem("accessToken");
+
+    // User is not logged in
+    if (!token) {
+      setFavouriteIds(new Set());
+      return;
+    }
+
+    try {
+      const res = await api.get("/favourites");
+
+      console.log("FAVOURITES RESPONSE:", res.data);
+
+      const favIds = (res.data || []).map(
+        (f) => f.productId ?? f.product?.id ?? f.id
+      );
+
+      setFavouriteIds(new Set(favIds));
+    } catch (err) {
+      console.error("Favourites error:", err);
+
+      // Don't break Home page if favourites fail
+      setFavouriteIds(new Set());
+    }
+  };
+
+  fetchFavourites();
+}, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -130,29 +168,60 @@ const Home = () => {
     navigate(`/products?q=${encodeURIComponent(searchTerm.trim())}`);
   };
 
-  const toggleFavourite = async (productId) => {
-    const isFav = favouriteIds.has(productId);
-    setFavouriteIds((prev) => {
-      const next = new Set(prev);
-      isFav ? next.delete(productId) : next.add(productId);
-      return next;
-    });
-    try {
-      if (isFav) {
-        await api.delete(`/favourites/${productId}`);
-      } else {
-        await api.post("/favourites", { productId });
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Couldn't update favourites");
-      setFavouriteIds((prev) => {
-        const next = new Set(prev);
-        isFav ? next.add(productId) : next.delete(productId);
-        return next;
+const toggleFavourite = async (productId) => {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    toast.error("Please login to add favourites");
+    navigate("/login");
+    return;
+  }
+
+  const isFav = favouriteIds.has(productId);
+
+  // Optimistic UI
+  setFavouriteIds((prev) => {
+    const next = new Set(prev);
+
+    if (isFav) {
+      next.delete(productId);
+    } else {
+      next.add(productId);
+    }
+
+    return next;
+  });
+
+  try {
+    if (isFav) {
+      await api.delete(`/favourites/${productId}`);
+    } else {
+      await api.post("/favourites", {
+        productId,
       });
     }
-  };
+  } catch (err) {
+    console.error("Favourite update error:", err);
+
+    // Rollback
+    setFavouriteIds((prev) => {
+      const next = new Set(prev);
+
+      if (isFav) {
+        next.add(productId);
+      } else {
+        next.delete(productId);
+      }
+
+      return next;
+    });
+
+    toast.error(
+      err.response?.data?.message ||
+        "Couldn't update favourites"
+    );
+  }
+};
 
   const addToCart = async (productId) => {
     setAddingId(productId);
