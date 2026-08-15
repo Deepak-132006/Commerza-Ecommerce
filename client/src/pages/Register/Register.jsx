@@ -49,8 +49,11 @@ const Register = () => {
       });
       navigate("/login");
       console.log(res.data.message);
+      setLoading(false);
     } catch (error) {
       console.error(error);
+      setLoading(false);
+
     }
   };
 

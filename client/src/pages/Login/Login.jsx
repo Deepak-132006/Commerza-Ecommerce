@@ -15,7 +15,7 @@ const Login = () => {
   const [validEmail, setValidEmail] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const { setIsLoggedIn } = useContext(AuthContext);
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
@@ -37,6 +37,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
+      setLoading(true);
       const res = await api.post("/auth/login", {
         email,
         password,
@@ -50,13 +51,16 @@ const Login = () => {
       setIsLoggedIn(true);
       toast.success("Welcome back");
       navigate("/");
+      setLoading(false);
     } catch (error) {
       toast.error("User doesn't exist");
       console.log(error.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
-    if (loading) {
+  if (loading) {
     return (
       <>
         <Navbar />

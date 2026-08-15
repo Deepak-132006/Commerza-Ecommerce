@@ -13,6 +13,7 @@ const Navbar = () => {
   const [open, setOpen] = useState(false); // mobile menu
   const [menuOpen, setMenuOpen] = useState(false); // account dropdown
   const menuRef = useRef(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -53,6 +54,7 @@ const Navbar = () => {
     localStorage.clear();
     setIsLoggedIn(false);
     setMenuOpen(false);
+    setLoading(false)
     navigate("/login");
   };
 
@@ -73,7 +75,11 @@ const Navbar = () => {
       >
         {/* Logo */}
         <div className="cursor-pointer" onClick={() => navigate("/")}>
-          <img src={Logo} className="w-35 -mt-2 lg:w-32 lg:mt-0" alt="Store logo" />
+          <img
+            src={Logo}
+            className="w-35 -mt-2 lg:w-32 lg:mt-0"
+            alt="Store logo"
+          />
         </div>
 
         {/* Hamburger */}
@@ -184,10 +190,15 @@ const Navbar = () => {
               { label: "Favorites", path: "/favorites" },
               { label: "My Orders", path: "/my-orders" },
             ].map((item) => (
-              <div key={item.path} className="hover:-translate-y-1.5 duration-150 mt-5">
+              <div
+                key={item.path}
+                className="hover:-translate-y-1.5 duration-150 mt-5"
+              >
                 <button
                   className={`w-full justify-between py-6 px-8 flex items-center cursor-pointer ${
-                    isActive(item.path) ? "text-hunter-green" : "hover:text-olive-bark"
+                    isActive(item.path)
+                      ? "text-hunter-green"
+                      : "hover:text-olive-bark"
                   }`}
                   onClick={() => navigate(item.path)}
                 >
