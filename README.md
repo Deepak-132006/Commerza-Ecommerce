@@ -155,3 +155,4 @@ The React customer client and the separate React admin dashboard are both deploy
   <img src="https://raw.githubusercontent.com/Deepak-132006/Commerza-Ecommerce/master/client/src/assets/logo/Logo-NoBG.png" width="70" alt="Commerza"/>
 </p>
 
+<p align="center"><sub>Project completed on 16 August 2026</sub></p>
