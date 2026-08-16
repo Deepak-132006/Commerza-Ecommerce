@@ -2,10 +2,8 @@
   <img src="https://raw.githubusercontent.com/Deepak-132006/Commerza-Ecommerce/master/client/src/assets/logo/Logo-LS-NoBG.png" width="600" alt="Commerza Logo"/>
 </p>
 
-<h1 align="center">COMMERZA</h1>
-
 <p align="center">
-  A full-stack e-commerce platform with JWT authentication, role-based access, real payment integration, and a dedicated admin dashboard.
+  A Full-Stack E-commerce platform with JWT authentication, role-based access, real payment integration, and a dedicated admin dashboard.
 </p>
 
 <p align="center">
