@@ -616,7 +616,7 @@ const toggleFavourite = async (productId) => {
 
                     <div className="flex gap-2 mt-3">
                       <button
-                        onClick={() => navigate("/checkout")}
+                        onClick={() => navigate("/products")}
                         className="flex-1 py-2 rounded-full text-xs font-medium transition-all active:scale-[0.98]"
                         style={{
                           backgroundColor: "var(--color-hunter-green)",

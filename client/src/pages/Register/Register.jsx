@@ -91,7 +91,7 @@ const Register = () => {
               <p>Explore the collection, express yourself</p>
             </div>
           </div>
-          <div className="mt-5 flex flex-col gap-5 p-6 border-2 border-gray-200 rounded-3xl w-[400px] justify-center m-auto">
+          <form className="mt-5 flex flex-col gap-5 p-6 border-2 border-gray-200 rounded-3xl w-[400px] justify-center m-auto">
             <div>
               <div>
                 {name.length > 0 && !validName && (
@@ -167,6 +167,7 @@ const Register = () => {
             </div>
             <div>
               <button
+              type="submit"
                 className="w-full bg-hunter-green p-3 text-[16px] text-porcelain rounded-md hover:bg-evergreen hover:cursor-pointer"
                 onClick={handleRegister}
               >
@@ -184,7 +185,7 @@ const Register = () => {
                 </span>
               </p>
             </div>
-          </div>
+          </form>
         </div>
         <div>
           <div className="flex justify-center bg-porcelain">

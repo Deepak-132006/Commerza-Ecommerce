@@ -27,9 +27,11 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain)
+            throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
 
@@ -37,38 +39,36 @@ public class JwtFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        String token = authHeader.substring(7);
-        String email = jwtUtil.extractEmail(token);
 
-        if (email == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        try {
+            String token = authHeader.substring(7);
 
-        User user = userRespository.findByEmail(email);
+            String email = jwtUtil.extractEmail(token);
 
-        if (user == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-        boolean valid = jwtUtil.isTokenValid(token, user.getEmail());
+                User user = userRespository.findByEmail(email);
 
-        if (!valid) {
+                if (user != null && jwtUtil.isTokenValid(token, user.getEmail())) {
+
+                    String userRole = "ROLE_" + user.getRole().name();
+
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    user,
+                                    null,
+                                    List.of(new SimpleGrantedAuthority(userRole))
+                            );
+
+                    SecurityContextHolder.getContext()
+                            .setAuthentication(authentication);
+                }
+            }
+
+        } catch (Exception e) {
             SecurityContextHolder.clearContext();
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
         }
 
-
-        Role role = user.getRole();
-        String userRole = "ROLE_" + role.name();
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                user,
-                null,
-                List.of(new SimpleGrantedAuthority(userRole))
-        );
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         filterChain.doFilter(request, response);
     }
 }

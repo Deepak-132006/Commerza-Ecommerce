@@ -91,7 +91,7 @@ const Login = () => {
               <p>Explore the collection, express yourself</p>
             </div>
           </div>
-          <div className="mt-5 flex flex-col gap-5 p-8 border-2 border-gray-200 rounded-3xl w-[350px] justify-center m-auto">
+          <form className="mt-5 flex flex-col gap-5 p-8 border-2 border-gray-200 rounded-3xl w-[350px] justify-center m-auto">
             <div>
               <div>
                 {email.length > 0 && !validEmail && (
@@ -158,6 +158,7 @@ const Login = () => {
             </div>
             <div>
               <button
+              type="submit"
                 className="w-full bg-hunter-green p-3 text-[16px] text-porcelain rounded-md hover:bg-evergreen hover:cursor-pointer"
                 onClick={handleLogin}
               >
@@ -175,7 +176,7 @@ const Login = () => {
                 </span>
               </p>
             </div>
-          </div>
+          </form>
         </div>
         <div>
           <div className="mt-10 flex justify-center">

@@ -228,7 +228,7 @@ ${address.pincode}
             place your order
           </p>
 
-          <div className="grid md:grid-cols-2 gap-8 items-start">
+          <form className="grid md:grid-cols-2 gap-8 items-start">
             {/* Shipping Address */}
             <div className="bg-cwhite rounded-2xl p-6 shadow-sm border border-soft-fawn/20">
               <h2 className="font-serif-display text-xl text-evergreen mb-5">
@@ -360,6 +360,7 @@ ${address.pincode}
 
               <button
                 onClick={placeOrder}
+                type="submit"
                 disabled={!isAddressComplete || placing}
                 className="w-full mt-6 bg-hunter-green text-cwhite py-3.5 rounded-full font-medium hover:bg-evergreen active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
@@ -372,7 +373,7 @@ ${address.pincode}
                 </p>
               )}
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </>
