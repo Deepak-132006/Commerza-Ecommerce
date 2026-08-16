@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  A full-stack e-commerce platform with JWT authentication, role-based access, real payment integration, and a dedicated admin dashboard.
+  A Full-Stack E-commerce platform with JWT authentication, role-based access, real payment integration, and a dedicated admin dashboard.
 </p>
 
 <p align="center">
