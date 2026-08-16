@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../axios/api";
 import Navbar from "../../layouts/Navbar";
+import toast from "react-hot-toast";
 
 const FIELDS = [
   { key: "fullName", label: "Full Name" },
@@ -189,6 +190,21 @@ ${address.pincode}
       razorpay.open();
     } catch (error) {
       console.error("Order/payment failed:", error);
+
+      if (error.response?.status === 400) {
+        toast.error(error.response?.data?.message || "Unable to place order");
+        return;
+      }
+
+      if (error.response?.status === 401) {
+        toast.error("Your session has expired. Please login again.");
+        return;
+      }
+
+      toast.error(
+        error.response?.data?.message ||
+          "Something went wrong while placing the order.",
+      );
     } finally {
       setPlacing(false);
     }
