@@ -36,24 +36,30 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleLogin = async () => {
+    if (!email?.trim()) {
+      toast.error("Please enter your email");
+      return;
+    }
+    if (!password?.trim()) {
+      toast.error("Please enter your password");
+      return;
+    }
     try {
       setLoading(true);
       const res = await api.post("/auth/login", {
-        email,
-        password,
+        email: email.trim(),
+        password: password.trim(),
       });
       localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("refreshToken", res.data.refreshToken);
       localStorage.setItem("name", res.data.name);
       localStorage.setItem("email", res.data.email);
       localStorage.setItem("role", res.data.role);
-
       setIsLoggedIn(true);
       toast.success("Welcome back");
       navigate("/");
-      setLoading(false);
     } catch (error) {
-      toast.error("User doesn't exist");
+      toast.error(error.response?.data?.message || "Login failed");
       console.log(error.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
@@ -122,7 +128,7 @@ const Login = () => {
               </div>
               <div className="relative">
                 <input
-                required
+                  required
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => {
@@ -159,7 +165,7 @@ const Login = () => {
             </div>
             <div>
               <button
-              type="submit"
+                type="submit"
                 className="w-full bg-hunter-green p-3 text-[16px] text-porcelain rounded-md hover:bg-evergreen hover:cursor-pointer"
                 onClick={handleLogin}
               >
