@@ -23,6 +23,11 @@ public class UserController {
         this.refreshTokenService = refreshTokenService;
     }
 
+    @GetMapping("/api/v1/health")
+    public String healthCheck() {
+        return "Server is Running Fine Don't Worry!!";
+    }
+
     @PostMapping("/api/v1/auth/register")
     public ResponseEntity<RegisterResponse> register(@RequestBody @Valid RegisterRequest request){
         return userService.getRegister(request);

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Point this at your Commerza backend's base URL.
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8084/api/v1";
+const BASE_URL = import.meta.env.VITE_API_URL || "https://commerza-ecommerce.onrender.com/api/v1";
 
 const api = axios.create({
   baseURL: BASE_URL,
