@@ -8,7 +8,9 @@ const api = axios.create({
 
 let refreshPromise = null;
 
+// Attach access token
 api.interceptors.request.use((config) => {
+
   const token = localStorage.getItem("accessToken");
 
   if (token) {
@@ -18,12 +20,15 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+
 api.interceptors.response.use(
   (response) => response,
 
   async (error) => {
+
     const originalRequest = error.config;
 
+    // Only handle 401
     if (
       error.response?.status !== 401 ||
       originalRequest?._retry ||
@@ -36,27 +41,37 @@ api.interceptors.response.use(
     originalRequest._retry = true;
 
     try {
-      const refreshToken = localStorage.getItem("refreshToken");
+
+      const refreshToken =
+        localStorage.getItem("refreshToken");
 
       if (!refreshToken) {
         throw new Error("No refresh token");
       }
 
       // If another request is already refreshing,
-      // wait for that request instead of creating another one.
+      // wait for that request instead of refreshing again.
       if (!refreshPromise) {
+
         refreshPromise = axios
           .post(`${BASE_URL}/auth/refresh-token`, {
             refreshToken,
           })
           .then((res) => {
-            const newAccessToken = res.data.accessToken;
+
+            const newAccessToken =
+              res.data.accessToken;
 
             if (!newAccessToken) {
-              throw new Error("No access token returned");
+              throw new Error(
+                "No access token returned"
+              );
             }
 
-            localStorage.setItem("accessToken", newAccessToken);
+            localStorage.setItem(
+              "accessToken",
+              newAccessToken
+            );
 
             return newAccessToken;
           })
@@ -65,7 +80,11 @@ api.interceptors.response.use(
           });
       }
 
-      const newAccessToken = await refreshPromise;
+      const newAccessToken =
+        await refreshPromise;
+
+      originalRequest.headers =
+        originalRequest.headers || {};
 
       originalRequest.headers.Authorization =
         `Bearer ${newAccessToken}`;
@@ -76,7 +95,6 @@ api.interceptors.response.use(
 
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
-
       localStorage.removeItem("name");
       localStorage.removeItem("email");
       localStorage.removeItem("role");
