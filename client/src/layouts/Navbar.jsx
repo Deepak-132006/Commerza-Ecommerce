@@ -50,13 +50,18 @@ const Navbar = () => {
     setOpen(false);
   }, [location.pathname]);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    setIsLoggedIn(false);
-    setMenuOpen(false);
-    setLoading(false)
-    navigate("/login");
-  };
+const handleLogout = () => {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("name");
+  localStorage.removeItem("email");
+  localStorage.removeItem("role");
+
+  setIsLoggedIn(false);
+  setMenuOpen(false);
+  setLoading(false);
+  navigate("/login");
+};
 
   const navLinks = [
     { label: "Products", icon: Product, path: "/products" },

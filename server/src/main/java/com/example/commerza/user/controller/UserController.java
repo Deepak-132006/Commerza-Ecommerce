@@ -39,7 +39,9 @@ public class UserController {
     }
 
     @PostMapping("/api/v1/auth/refresh-token")
-    public RefreshResponse refreshTokens(@RequestBody RefreshRequest request){
+    public ResponseEntity<RefreshResponse> refreshTokens(
+            @RequestBody RefreshRequest request) {
+
         return refreshTokenService.refresh(request);
     }
 

@@ -41,11 +41,13 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         try {
+
             String token = authHeader.substring(7);
 
             String email = jwtUtil.extractEmail(token);
 
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (email != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 User user = userRespository.findByEmail(email);
 
@@ -65,10 +67,19 @@ public class JwtFilter extends OncePerRequestFilter {
                 }
             }
 
-        } catch (Exception e) {
-            SecurityContextHolder.clearContext();
-        }
+            filterChain.doFilter(request, response);
 
-        filterChain.doFilter(request, response);
+        }catch (Exception e) {
+            SecurityContextHolder.clearContext();
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+
+            response.getWriter().write(
+                    "{\"message\":\"Invalid or expired access token\"}"
+            );
+
+            return;
+        }
     }
 }
