@@ -122,6 +122,7 @@ const Login = () => {
               </div>
               <div className="relative">
                 <input
+                required
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => {
