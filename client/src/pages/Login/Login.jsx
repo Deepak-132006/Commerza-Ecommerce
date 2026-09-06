@@ -35,7 +35,8 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
     if (!email?.trim()) {
       toast.error("Please enter your email");
       return;
