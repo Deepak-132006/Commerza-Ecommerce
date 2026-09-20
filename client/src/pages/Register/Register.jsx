@@ -5,6 +5,7 @@ import Show from "../../assets/icons/show.png";
 import Hide from "../../assets/icons/hide.png";
 import { useNavigate } from "react-router-dom";
 import api from "../../axios/api.js";
+import toast from "react-hot-toast";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -14,7 +15,7 @@ const Register = () => {
   const [validEmail, setValidEmail] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [loader, setLoader] = useState(true);
+  const [loader, setLoader] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -40,18 +41,51 @@ const Register = () => {
     setValidEmail(emailRegex.test(email));
   };
 
-  const handleRegister = async () => {
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    if (!name.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+
+    if (!validName) {
+      toast.error("Please enter a valid name");
+      return;
+    }
+
+    if (!validEmail) {
+      toast.error("Please enter a valid email");
+      return;
+    }
+
+    if (!validPassword) {
+      toast.error("Password must contain letters, numbers & special symbols");
+      return;
+    }
+
     try {
       setLoader(true);
+
       const res = await api.post("/auth/register", {
         name,
         email,
         password,
       });
-      navigate("/login");
-      console.log(res.data.message);
+
+      toast.success(res.data.message || "Registration successful!");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
     } catch (error) {
       console.error(error);
+
+      const message =
+        error.response?.data?.message ||
+        "Registration failed. Please try again.";
+
+      toast.error(message);
     } finally {
       setLoader(false);
     }
@@ -91,7 +125,10 @@ const Register = () => {
               <p>Explore the collection, express yourself</p>
             </div>
           </div>
-          <form className="mt-5 flex flex-col gap-5 p-6 border-2 border-gray-200 rounded-3xl w-[400px] justify-center m-auto">
+          <form
+            onSubmit={handleRegister}
+            className="mt-5 flex flex-col gap-5 p-6 border-2 border-gray-200 rounded-3xl w-[400px] justify-center m-auto"
+          >
             <div>
               <div>
                 {name.length > 0 && !validName && (
@@ -167,11 +204,11 @@ const Register = () => {
             </div>
             <div>
               <button
-              type="submit"
-                className="w-full bg-hunter-green p-3 text-[16px] text-porcelain rounded-md hover:bg-evergreen hover:cursor-pointer"
-                onClick={handleRegister}
+                type="submit"
+                disabled={loader}
+                className="w-full bg-hunter-green p-3 text-[16px] text-porcelain rounded-md hover:bg-evergreen hover:cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Register
+                {loader ? "Registering..." : "Register"}
               </button>
             </div>
             <div>
